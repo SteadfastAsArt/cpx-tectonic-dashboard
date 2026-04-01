@@ -2193,15 +2193,15 @@ table.journal tbody tr.model-highlight {
 
   // Base layers — geological + reference
   const baseLayers = {
-    'Macrostrat Geology': L.tileLayer('https://tiles.macrostrat.org/carto/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://macrostrat.org">Macrostrat</a>',
+    'NatGeo': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri, National Geographic',
       maxZoom: 16,
     }),
-    'Terrain': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
-      subdomains: 'abc', maxZoom: 17,
+    'Terrain': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri',
+      maxZoom: 13,
     }),
-    'Esri Physical': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
+    'Physical': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; Esri',
       maxZoom: 8,
     }),
@@ -2214,7 +2214,7 @@ table.journal tbody tr.model-highlight {
       subdomains: 'abcd', maxZoom: 19,
     }),
   };
-  baseLayers['Macrostrat Geology'].addTo(map);
+  baseLayers['NatGeo'].addTo(map);
   L.control.layers(baseLayers, null, { position: 'bottomleft', collapsed: false }).addTo(map);
   L.control.scale({ metric: true, imperial: false }).addTo(map);
 
