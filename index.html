@@ -1,0 +1,2397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinopyroxene Tectonic Setting Classification — Research Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<style>
+/* =================================================================
+   RESET & ROOT
+   ================================================================= */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #ffffff;
+  --bg-alt: #f8f9fa;
+  --bg-card: #ffffff;
+  --border: #dee2e6;
+  --text: #212529;
+  --text-secondary: #6c757d;
+  --text-heading: #1a1a2e;
+  --accent: #1a5276;
+  --accent-light: #2980b9;
+  --success: #059669;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Source Serif 4', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  color: var(--text-heading);
+}
+
+/* =================================================================
+   LAYOUT
+   ================================================================= */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.4s ease;
+}
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.loading-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =================================================================
+   HEADER
+   ================================================================= */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+}
+.site-header .container {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.site-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.header-stats {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.header-stats span {
+  margin: 0 6px;
+  color: var(--border);
+}
+
+/* =================================================================
+   NAVIGATION
+   ================================================================= */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.site-nav .container {
+  display: flex;
+  gap: 0;
+}
+.site-nav a {
+  display: block;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.site-nav a:hover { color: var(--text); }
+.site-nav a.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* =================================================================
+   SECTIONS
+   ================================================================= */
+section {
+  padding: 40px 0 48px;
+}
+section + section {
+  border-top: 1px solid var(--border);
+}
+.section-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  letter-spacing: -0.3px;
+}
+
+/* =================================================================
+   CARDS
+   ================================================================= */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+/* =================================================================
+   TABLES (Journal style)
+   ================================================================= */
+.table-wrap { overflow-x: auto; margin-bottom: 4px; }
+table.journal {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.journal thead th {
+  text-align: left;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-top: 2px solid var(--text);
+  border-bottom: 1px solid var(--text);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-heading);
+}
+table.journal tbody td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+table.journal tbody tr:nth-child(even) {
+  background: var(--bg-alt);
+}
+table.journal tbody tr:last-child td {
+  border-bottom: 2px solid var(--text);
+}
+table.journal .num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: right;
+}
+table.journal .bold { font-weight: 600; }
+table.journal tbody tr.model-highlight td {
+  background: #f0fdf4;
+}
+table.journal tbody tr.model-highlight {
+  border-left: 3px solid var(--success);
+}
+
+/* =================================================================
+   FIGURE CAPTIONS
+   ================================================================= */
+.fig-caption {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 8px;
+  max-width: 900px;
+}
+.fig-caption strong {
+  color: var(--text);
+}
+.table-caption {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 6px;
+  margin-bottom: 16px;
+}
+.table-caption strong {
+  color: var(--text);
+}
+
+/* =================================================================
+   GRIDS
+   ================================================================= */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.grid-2-narrow {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.grid-3x2 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .grid-2, .grid-2-narrow { grid-template-columns: 1fr; }
+  .grid-3x2 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .grid-3x2 { grid-template-columns: 1fr; }
+}
+
+/* =================================================================
+   FINDINGS BLOCK
+   ================================================================= */
+.findings {
+  border-left: 3px solid var(--accent);
+  background: var(--bg-alt);
+  padding: 16px 20px;
+  margin: 24px 0;
+  font-size: 13.5px;
+}
+.findings h4 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.findings ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.findings li {
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+/* =================================================================
+   MAP
+   ================================================================= */
+.map-container {
+  position: relative;
+  height: 650px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+#sample-map {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
+}
+
+.map-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  display: flex;
+  gap: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+.map-controls button {
+  padding: 7px 14px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border-right: 1px solid var(--border);
+}
+.map-controls button:last-child { border-right: none; }
+.map-controls button:hover { background: var(--bg-alt); }
+.map-controls button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.map-side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 280px;
+  height: 100%;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(8px);
+  border-left: 1px solid var(--border);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+.map-panel-top {
+  padding: 18px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.map-side-panel .stat-total {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-heading);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.map-side-panel .stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.map-search-wrap {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.map-search {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  outline: none;
+  background: #f8f9fa;
+  transition: border-color 0.2s, background 0.2s;
+}
+.map-search:focus { border-color: var(--accent-light); background: #fff; }
+
+.map-legend-section {
+  padding: 12px 16px 4px;
+}
+.map-legend-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.map-legend-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 16px;
+}
+.map-legend-body::-webkit-scrollbar { width: 3px; }
+.map-legend-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  gap: 10px;
+  border-radius: 5px;
+  transition: background 0.15s;
+  cursor: default;
+}
+.legend-row:hover { background: #f0f2f5; }
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.legend-info {
+  flex: 1;
+  min-width: 0;
+}
+.legend-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+.legend-bar-wrap {
+  height: 4px;
+  background: #eee;
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+.legend-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.legend-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: nowrap;
+  line-height: 1;
+}
+.legend-pct {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: #adb5bd;
+  text-align: right;
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .map-side-panel { display: none; }
+}
+
+/* =================================================================
+   LEAFLET LAYER CONTROL (Macrostrat legend) — professional styling
+   ================================================================= */
+.leaflet-control-layers {
+  border-radius: 6px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  font-family: var(--font-body) !important;
+  font-size: 12px !important;
+  padding: 0 !important;
+  background: rgba(255,255,255,0.96) !important;
+  backdrop-filter: blur(6px) !important;
+}
+.leaflet-control-layers-list {
+  padding: 10px 14px !important;
+}
+.leaflet-control-layers-base label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 4px 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  font-size: 12px !important;
+  color: var(--text) !important;
+  transition: color 0.15s !important;
+}
+.leaflet-control-layers-base label:hover {
+  color: var(--accent) !important;
+}
+.leaflet-control-layers-base input {
+  margin: 0 !important;
+  accent-color: var(--accent) !important;
+}
+.leaflet-control-layers-separator {
+  border-color: var(--border) !important;
+  margin: 6px 0 !important;
+}
+.leaflet-control-layers-toggle {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+/* =================================================================
+   FEATURE IMPORTANCE & SHAP (new sections)
+   ================================================================= */
+.shap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+@media (max-width: 768px) {
+  .shap-grid { grid-template-columns: 1fr; }
+}
+
+/* =================================================================
+   FOOTER
+   ================================================================= */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* =================================================================
+   RESPONSIVE NAV OVERFLOW
+   ================================================================= */
+@media (max-width: 768px) {
+  .site-nav .container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .site-nav a {
+    white-space: nowrap;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+}
+
+/* =================================================================
+   PLOTLY OVERRIDES
+   ================================================================= */
+.js-plotly-plot .plotly .modebar { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+</div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="container">
+    <h1>Clinopyroxene Tectonic Setting Classification</h1>
+    <div class="header-stats" id="header-stats"></div>
+  </div>
+</header>
+
+<!-- Navigation -->
+<nav class="site-nav" id="site-nav">
+  <div class="container">
+    <a href="#dataset" class="active" data-section="dataset">Dataset</a>
+    <a href="#metadata" data-section="metadata">Metadata</a>
+    <a href="#features" data-section="features">Feature Analysis</a>
+    <a href="#models" data-section="models">Models</a>
+    <a href="#interpretation" data-section="interpretation">Interpretation</a>
+    <a href="#validation" data-section="validation">Validation</a>
+    <a href="#basalt" data-section="basalt">Basalt</a>
+    <a href="#map" data-section="map">Map</a>
+  </div>
+</nav>
+
+<!-- ============================================================= -->
+<!-- DATASET OVERVIEW -->
+<!-- ============================================================= -->
+<section id="dataset">
+  <div class="container">
+    <h2 class="section-title">Dataset Overview</h2>
+    <div class="grid-2-narrow">
+      <div>
+        <p class="table-caption"><strong>Table 1.</strong> Dataset summary statistics.</p>
+        <div class="table-wrap">
+          <table class="journal" id="summary-table">
+            <thead><tr><th>Property</th><th>Value</th></tr></thead>
+            <tbody id="summary-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div id="fig-class-dist" style="width:100%;height:440px;"></div>
+        <p class="fig-caption" id="cap-fig1"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- METADATA OVERVIEW -->
+<!-- ============================================================= -->
+<section id="metadata">
+  <div class="container">
+    <h2 class="section-title">Metadata Overview</h2>
+
+    <!-- Figure 2: Rock Name Distribution -->
+    <div id="fig-rock-names" style="width:100%;height:440px;"></div>
+    <p class="fig-caption"><strong>Figure 2.</strong> Top 10 rock types by sample count (951 unique rock names total).</p>
+
+    <!-- Figure 3: Metadata Column Fill Rates -->
+    <div style="margin-top:32px;">
+      <div id="fig-fill-rates" style="width:100%;height:480px;"></div>
+      <p class="fig-caption"><strong>Figure 3.</strong> Metadata column completeness. Age and grain size data are nearly absent.</p>
+    </div>
+
+    <!-- Figure 4: Mineral Subtypes -->
+    <div style="margin-top:32px;">
+      <div id="fig-mineral-types" style="width:100%;height:420px;"></div>
+      <p class="fig-caption"><strong>Figure 4.</strong> Mineral subtypes within the clinopyroxene dataset (18 unique types; 97.7% are generic clinopyroxene).</p>
+    </div>
+
+    <!-- Figure 5: Crystal Type & Rim/Core -->
+    <div style="margin-top:32px;">
+      <div class="grid-2">
+        <div>
+          <div id="fig-crystal-type" style="width:100%;height:380px;"></div>
+        </div>
+        <div>
+          <div id="fig-rim-core" style="width:100%;height:380px;"></div>
+        </div>
+      </div>
+      <p class="fig-caption"><strong>Figure 5.</strong> Crystal type (left) and rim/core position (right) distributions. Phenocrysts dominate (63.2%); core analyses outnumber rim analyses (49.1% vs 36.9%).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- FEATURE ANALYSIS -->
+<!-- ============================================================= -->
+<section id="features">
+  <div class="container">
+    <h2 class="section-title">Feature Analysis</h2>
+
+    <!-- Figure 6 -->
+    <div class="grid-2">
+      <div>
+        <div id="fig-missing-rates" style="width:100%;height:420px;"></div>
+      </div>
+      <div>
+        <div id="fig-missing-dist" style="width:100%;height:420px;"></div>
+      </div>
+    </div>
+    <p class="fig-caption"><strong>Figure 6.</strong> (a) Per-feature missing rates across 14 major oxides. Dashed line at 50% highlights features with severe data loss. (b) Distribution of per-row missing counts showing most rows lack 3-5 major oxide values.</p>
+
+    <!-- Figure 7 -->
+    <div style="margin-top:32px;">
+      <div id="fig-discrimination" style="width:100%;height:400px;"></div>
+      <p class="fig-caption"><strong>Figure 7.</strong> Feature discrimination power measured by coefficient of variation of class means. K<sub>2</sub>O shows the strongest inter-class separation (CV = 1.753), substantially exceeding all other oxides.</p>
+    </div>
+
+    <!-- Figure 8 -->
+    <div style="margin-top:32px;">
+      <div id="fig-correlation" style="width:100%;height:520px;max-width:600px;"></div>
+      <p class="fig-caption"><strong>Figure 8.</strong> Pearson correlation matrix of 10 major oxides (n = 1,049 complete rows). Strong negative correlations between SiO<sub>2</sub>&ndash;TiO<sub>2</sub> and SiO<sub>2</sub>&ndash;Al<sub>2</sub>O<sub>3</sub> reflect petrological substitution relationships.</p>
+    </div>
+
+    <!-- Figure 9 -->
+    <div style="margin-top:32px;">
+      <div class="grid-3x2" id="fig-boxplots-grid"></div>
+      <p class="fig-caption"><strong>Figure 9.</strong> Distribution of six key discriminating oxides across tectonic settings. Boxes show IQR with median; whiskers extend to 1.5 &times; IQR.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- MODEL COMPARISON -->
+<!-- ============================================================= -->
+<section id="models">
+  <div class="container">
+    <h2 class="section-title">Model Comparison</h2>
+
+    <p class="table-caption"><strong>Table 2.</strong> Performance comparison across eight modeling strategies. All models use XGBoost with Bayesian hyperparameter tuning. Models marked with &pm; show 5-fold CV standard deviation.</p>
+    <div class="table-wrap">
+      <table class="journal" id="model-table">
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Algorithm</th>
+            <th style="text-align:right">Features</th>
+            <th style="text-align:right">Training Rows</th>
+            <th style="text-align:right">Accuracy</th>
+            <th style="text-align:right">F1-macro</th>
+            <th style="text-align:right">F1-weighted</th>
+          </tr>
+        </thead>
+        <tbody id="model-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Figure 10 -->
+    <div style="margin-top:28px;">
+      <div id="fig-model-compare" style="width:100%;height:400px;"></div>
+      <p class="fig-caption"><strong>Figure 10.</strong> Accuracy and macro-averaged F1 score across all eight modeling strategies. The excl_trace_missing strategy (F1m = 0.909) offers the best practical trade-off between performance and sample size, while M2_T0 achieves 97.2% on a small complete-trace subset.</p>
+    </div>
+
+    <!-- Key Findings -->
+    <div class="findings">
+      <h4>Key Findings</h4>
+      <ul>
+        <li><strong>Excl. Full-Trace-Missing achieves F1-macro = 0.909 &pm; 0.005</strong> on 39,631 samples by excluding rows with no trace data at all, making it the best practical model for real-world deployment with cross-validated reliability.</li>
+        <li><strong>M2_T0 achieves 97.2% F1-macro</strong> using complete trace element data, but only 1,195 samples are available &mdash; suggesting trace elements contain strong discriminative signal when present.</li>
+        <li><strong>K<sub>2</sub>O is the strongest discriminator</strong> (CV = 1.753), substantially exceeding traditionally emphasized oxides like TiO<sub>2</sub> and Cr<sub>2</sub>O<sub>3</sub>.</li>
+        <li><strong>Basalt-only classification drops to F1-macro = 0.717</strong>, confirming that rock type diversity carries significant tectonic signal.</li>
+        <li><strong>409.8:1 class imbalance</strong> between Intraplate Volcanics and Ocean-Basin Flood Basalt requires careful sample weighting or resampling strategies.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- MODEL INTERPRETATION -->
+<!-- ============================================================= -->
+<section id="interpretation">
+  <div class="container">
+    <h2 class="section-title">Model Interpretation</h2>
+
+    <!-- Figure 11: Feature Importance (two charts side by side) -->
+    <div class="shap-grid">
+      <div>
+        <div id="fig-fi" style="width:100%;height:450px;"></div>
+        <p class="fig-caption"><strong>Figure 11a.</strong> XGBoost feature importance (gain). NiO and ferrosilite endmember dominate, suggesting crystal chemistry is key.</p>
+      </div>
+      <div>
+        <div id="fig-shap-global" style="width:100%;height:450px;"></div>
+        <p class="fig-caption"><strong>Figure 11b.</strong> Mean |SHAP| values across all classes. Trace elements (Sr, Sm, Zr, Sc) show strongest impact on model predictions.</p>
+      </div>
+    </div>
+
+    <!-- Figure 12: SHAP per-class heatmap -->
+    <div>
+      <div id="fig-shap-heatmap" style="width:100%;height:500px;"></div>
+      <p class="fig-caption"><strong>Figure 12.</strong> Per-class mean |SHAP| for top 15 features. Each cell shows how much a feature contributes to predicting a specific tectonic setting.</p>
+    </div>
+
+    <!-- Figure 13: SHAP beeswarm-style scatter -->
+    <div style="margin-top:24px;">
+      <div id="fig-shap-beeswarm" style="width:100%;height:500px;"></div>
+      <p class="fig-caption"><strong>Figure 13.</strong> SHAP value vs feature value for top features. Points show how high/low feature values push model predictions (positive SHAP = toward that class prediction).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- CROSS-VALIDATION & ERROR ANALYSIS -->
+<!-- ============================================================= -->
+<section id="validation">
+  <div class="container">
+    <h2 class="section-title">Cross-Validation &amp; Error Analysis</h2>
+
+    <!-- CV scores summary card -->
+    <div id="cv-summary" style="margin-bottom:24px;"></div>
+
+    <!-- Confusion matrix heatmap -->
+    <div id="fig-confusion" style="width:100%;height:640px;"></div>
+    <p class="fig-caption"><strong>Figure 14.</strong> Normalized confusion matrix from 5-fold stratified cross-validation. Rows represent the true class; columns represent the predicted class. Diagonal elements indicate per-class recall.</p>
+
+    <!-- Per-class metrics table -->
+    <div id="per-class-table" style="margin-top:24px;"></div>
+
+    <!-- F1 vs sample size scatter -->
+    <div id="fig-f1-vs-size" style="width:100%;height:420px;margin-top:24px;"></div>
+    <p class="fig-caption"><strong>Figure 15.</strong> Relationship between class sample size (log scale) and F1-score. Minority classes tend toward lower F1, illustrating the effect of class imbalance on model performance.</p>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- BASALT SUBSET EXPERIMENT -->
+<!-- ============================================================= -->
+<section id="basalt">
+  <div class="container">
+    <h2 class="section-title">Basalt Subset Experiment</h2>
+
+    <!-- Summary card -->
+    <div id="basalt-summary" style="margin-bottom:24px;"></div>
+
+    <!-- Figure 16: Basalt Rock Name Breakdown -->
+    <div id="fig-basalt-breakdown" style="width:100%;height:520px;"></div>
+    <p class="fig-caption"><strong>Figure 16.</strong> Rock name breakdown within the basalt subset (46,530 samples across 10 basalt-bearing rock names). Plain BASALT dominates the subset.</p>
+
+    <!-- Figure 17: Model Comparison — Basalt vs Full Dataset -->
+    <div style="margin-top:32px;">
+      <div id="fig-basalt-compare" style="width:100%;height:400px;"></div>
+      <p class="fig-caption"><strong>Figure 17.</strong> F1-macro comparison: basalt subset vs full dataset. Restricting to basalt increases classification difficulty, as different rock types carry tectonic signal.</p>
+    </div>
+
+    <!-- Figure 18: Basalt Confusion Matrix -->
+    <div style="margin-top:32px;">
+      <div id="fig-basalt-confusion" style="width:100%;height:640px;"></div>
+      <p class="fig-caption"><strong>Figure 18.</strong> Confusion matrix for basalt-only classification (5-fold CV, all features, n = 46,530).</p>
+    </div>
+
+    <!-- Per-class metrics table -->
+    <div id="basalt-per-class-table" style="margin-top:24px;"></div>
+
+    <!-- Key insight -->
+    <div class="findings" style="margin-top:24px;">
+      <h4>Key Insight</h4>
+      <ul>
+        <li>Basalt clinopyroxene classification achieves <strong>F1-macro = 0.717</strong>, substantially lower than the full dataset (0.909). This confirms that rock type diversity carries strong tectonic signal &mdash; kimberlites are almost exclusively from Archean Cratons, while basalts span all tectonic environments with overlapping geochemistry.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= -->
+<!-- MAP -->
+<!-- ============================================================= -->
+<section id="map">
+  <div class="container">
+    <h2 class="section-title">Sample Provenance Map</h2>
+    <div class="map-container">
+      <div id="sample-map"></div>
+      <div class="map-controls" id="map-controls">
+        <button class="active" data-mode="density">Density</button>
+        <button data-mode="by-setting">By Setting</button>
+        <button data-mode="cluster">Cluster</button>
+      </div>
+      <div class="map-side-panel" id="map-panel">
+        <div class="map-panel-top">
+          <div class="stat-total" id="map-total"></div>
+          <div class="stat-label">mapped analyses</div>
+        </div>
+        <div class="map-search-wrap">
+          <input type="text" class="map-search" id="map-search" placeholder="Search tectonic setting...">
+        </div>
+        <div class="map-legend-section">
+          <div class="map-legend-title">Tectonic Settings</div>
+        </div>
+        <div class="map-legend-body" id="map-legend"></div>
+      </div>
+    </div>
+    <p class="fig-caption" id="cap-fig19"></p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    Data: GRO.data DOI:10.25625/SGFTFN &middot; Analysis pipeline: Python / XGBoost / LightGBM
+  </div>
+</footer>
+
+<!-- ============================================================= -->
+<!-- SCRIPTS -->
+<!-- ============================================================= -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+(async function() {
+  'use strict';
+
+  /* ---------------------------------------------------------------
+     CONSTANTS
+     --------------------------------------------------------------- */
+  const SETTING_COLORS = {
+    'INTRAPLATE VOLCANICS': '#d62728',
+    'CONVERGENT MARGIN': '#1f77b4',
+    'OCEAN ISLAND': '#2ca02c',
+    'CONTINENTAL FLOOD BASALT': '#ff7f0e',
+    'RIFT VOLCANICS': '#9467bd',
+    'COMPLEX VOLCANIC SETTINGS': '#8c564b',
+    'SEAMOUNT': '#e377c2',
+    'ARCHEAN CRATON (INCLUDING GREENSTONE BELTS)': '#7f7f7f',
+    'OCEANIC PLATEAU': '#bcbd22',
+    'SUBMARINE RIDGE': '#17becf',
+    'OCEAN-BASIN FLOOD BASALT': '#aec7e8',
+  };
+
+  const PLOTLY_CONFIG = { responsive: true, displayModeBar: false };
+
+  function plotlyLayout(overrides) {
+    return Object.assign({
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      font: { family: 'Inter, sans-serif', size: 12, color: '#212529' },
+      margin: { l: 60, r: 20, t: 40, b: 50 },
+    }, overrides);
+  }
+
+  /* ---------------------------------------------------------------
+     DATA FETCH
+     --------------------------------------------------------------- */
+  let D;
+  try {
+    const resp = await fetch('data/viz_data.json');
+    D = await resp.json();
+  } catch (e) {
+    document.getElementById('loading-overlay').innerHTML =
+      '<p style="color:#dc3545;font-family:Inter,sans-serif;font-size:14px;">Failed to load data. Ensure <code>data/viz_data.json</code> is available.</p>';
+    return;
+  }
+
+  const shortName = (full) => (D.setting_short && D.setting_short[full]) || full;
+  const fmtNum = (n) => Number(n).toLocaleString('en-US');
+
+  /* ---------------------------------------------------------------
+     HEADER STATS
+     --------------------------------------------------------------- */
+  document.getElementById('header-stats').innerHTML =
+    `${fmtNum(D.dataset.total_rows)} records<span>&middot;</span>${D.dataset.total_columns} features<span>&middot;</span>${D.dataset.n_classes} classes`;
+
+  /* ---------------------------------------------------------------
+     NAVIGATION — active state on scroll
+     --------------------------------------------------------------- */
+  const navLinks = document.querySelectorAll('.site-nav a');
+  const sections = ['dataset','metadata','features','models','interpretation','validation','basalt','map'].map(id => document.getElementById(id));
+
+  function updateNav() {
+    const scrollY = window.scrollY + 80;
+    let current = 'dataset';
+    for (const sec of sections) {
+      if (sec.offsetTop <= scrollY) current = sec.id;
+    }
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.dataset.section === current);
+    });
+  }
+  window.addEventListener('scroll', updateNav, { passive: true });
+
+  /* ---------------------------------------------------------------
+     TABLE 1: Dataset Summary
+     --------------------------------------------------------------- */
+  const ds = D.dataset;
+  const traceRows = 39631;
+  const tracePct = ((traceRows / ds.valid_target_rows) * 100).toFixed(1);
+  const traceFull = ds.completeness.trace_all_present;
+  const traceFullPct = ((traceFull / ds.valid_target_rows) * 100).toFixed(1);
+
+  const summaryRows = [
+    ['Source', 'GRO.data (DOI: 10.25625/SGFTFN)'],
+    ['Total records', fmtNum(ds.total_rows)],
+    ['Valid analyses', fmtNum(ds.valid_target_rows)],
+    ['Columns', fmtNum(ds.total_columns)],
+    ['Classes', `${ds.n_classes} tectonic settings`],
+    ['Class balance ratio', `${D.xy_summary.class_balance_ratio}:1`],
+    ['Complete major oxide rows', `${ds.completeness.major_all_present} (0%)`],
+    ['Rows with trace data', `${fmtNum(traceRows)} (${tracePct}%)`],
+    ['Complete trace rows', `${fmtNum(traceFull)} (${traceFullPct}%)`],
+  ];
+  document.getElementById('summary-tbody').innerHTML = summaryRows.map(
+    ([prop, val]) => `<tr><td>${prop}</td><td class="num">${val}</td></tr>`
+  ).join('');
+
+  /* ---------------------------------------------------------------
+     FIGURE 1: Class distribution
+     --------------------------------------------------------------- */
+  {
+    const entries = Object.entries(D.class_distribution)
+      .sort((a, b) => a[1] - b[1]); // ascending for horizontal bar (bottom to top)
+    const labels = entries.map(e => shortName(e[0]));
+    const values = entries.map(e => e[1]);
+    const colors = entries.map(e => SETTING_COLORS[e[0]] || '#999');
+
+    Plotly.newPlot('fig-class-dist', [{
+      type: 'bar',
+      orientation: 'h',
+      x: values,
+      y: labels,
+      marker: { color: colors },
+      text: values.map(v => fmtNum(v)),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 11, color: '#6c757d' },
+      hovertemplate: '%{y}: %{x:,}<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'Class Distribution', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Number of samples', gridcolor: '#eee', zeroline: false },
+      yaxis: { automargin: true, tickfont: { size: 11 } },
+      margin: { l: 150, r: 70, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+
+    document.getElementById('cap-fig1').innerHTML =
+      `<strong>Figure 1.</strong> Distribution of samples across 11 tectonic settings. The dataset is severely imbalanced (${D.xy_summary.class_balance_ratio}:1 ratio between ${shortName(D.xy_summary.largest_class)} and ${shortName(D.xy_summary.smallest_class)}).`;
+  }
+
+  /* ---------------------------------------------------------------
+     METADATA: Hardcoded metadata statistics
+     --------------------------------------------------------------- */
+  const METADATA = {
+    rock_names: {
+      total_unique: 951,
+      top: [
+        {name: "BASALT", count: 27395, pct: 12.9},
+        {name: "NOT GIVEN", count: 22576, pct: 10.7},
+        {name: "SCORIA", count: 9253, pct: 4.4},
+        {name: "BASALTIC-ANDESITE", count: 8474, pct: 4.0},
+        {name: "KIMBERLITE", count: 7501, pct: 3.5},
+        {name: "RHYOLITE", count: 7124, pct: 3.4},
+        {name: "LHERZOLITE, XENOLITH", count: 6583, pct: 3.1},
+        {name: "GABBRO", count: 5854, pct: 2.8},
+        {name: "LHERZOLITE, SPINEL, XENOLITH", count: 5569, pct: 2.6},
+        {name: "ANDESITE", count: 5281, pct: 2.5},
+      ]
+    },
+    mineral_types: {
+      total_unique: 18,
+      top: [
+        {name: "CLINOPYROXENE", count: 206910, pct: 97.7},
+        {name: "AUGITE", count: 2237, pct: 1.1},
+        {name: "DIOPSIDE", count: 963, pct: 0.5},
+        {name: "PIGEONITE", count: 947, pct: 0.4},
+        {name: "AEGIRINE", count: 253, pct: 0.1},
+        {name: "OMPHACITE", count: 157, pct: 0.1},
+      ]
+    },
+    crystal_types: [
+      {name: "phenocryst", count: 28320, pct: 63.2},
+      {name: "groundmass", count: 4401, pct: 9.8},
+      {name: "macrocryst", count: 3651, pct: 8.1},
+      {name: "megacryst", count: 2106, pct: 4.7},
+      {name: "microphenocryst", count: 1655, pct: 3.7},
+      {name: "xenocryst", count: 1629, pct: 3.6},
+    ],
+    rim_core: [
+      {name: "core", count: 20648, pct: 49.1},
+      {name: "rim", count: 15512, pct: 36.9},
+      {name: "intermediate", count: 5799, pct: 13.8},
+    ],
+    land_sea: [
+      {name: "subaerial", count: 201284, pct: 95.0},
+      {name: "subaquatic", count: 10476, pct: 5.0},
+    ],
+    fill_rates: [
+      {col: "CITATION", rate: 100},
+      {col: "ROCK NAME", rate: 100},
+      {col: "MINERAL", rate: 100},
+      {col: "LAND/SEA", rate: 100},
+      {col: "LOCATION", rate: 99.9},
+      {col: "LOCATION COMMENT", rate: 65.1},
+      {col: "SPOT", rate: 32.5},
+      {col: "CRYSTAL", rate: 21.2},
+      {col: "RIM/CORE", rate: 19.8},
+      {col: "ROCK TEXTURE", rate: 14.8},
+      {col: "ELEVATION", rate: 5.7},
+      {col: "ALTERATION", rate: 2.8},
+      {col: "DRILLING DEPTH", rate: 1.1},
+      {col: "AGE (Ma)", rate: 0.1},
+      {col: "GRAIN SIZE", rate: 0.1},
+    ],
+  };
+
+  /* ---------------------------------------------------------------
+     FIGURE 2: Rock Name Distribution
+     --------------------------------------------------------------- */
+  {
+    const items = METADATA.rock_names.top.slice().reverse();
+    const seqPalette = [
+      '#08306b','#08519c','#2171b5','#4292c6','#6baed6',
+      '#9ecae1','#c6dbef','#deebf7','#f7fbff','#eff3ff'
+    ].reverse();
+    Plotly.newPlot('fig-rock-names', [{
+      type: 'bar',
+      orientation: 'h',
+      x: items.map(d => d.count),
+      y: items.map(d => d.name),
+      marker: { color: items.map((_, i) => seqPalette[i % seqPalette.length]) },
+      text: items.map(d => fmtNum(d.count) + ' (' + d.pct + '%)'),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 10, color: '#6c757d' },
+      hovertemplate: '%{y}: %{x:,} samples (%{text})<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'Top 10 Rock Names by Sample Count', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Number of samples', gridcolor: '#eee', zeroline: false },
+      yaxis: { automargin: true, tickfont: { size: 11 } },
+      margin: { l: 200, r: 120, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 3: Metadata Column Fill Rates
+     --------------------------------------------------------------- */
+  {
+    const items = METADATA.fill_rates.slice().reverse();
+    const fillColors = items.map(d => {
+      const t = d.rate / 100;
+      const r = Math.round(220 * (1 - t) + 5 * t);
+      const g = Math.round(50 * (1 - t) + 150 * t);
+      const b = Math.round(50 * (1 - t) + 80 * t);
+      return `rgb(${r},${g},${b})`;
+    });
+    Plotly.newPlot('fig-fill-rates', [{
+      type: 'bar',
+      orientation: 'h',
+      x: items.map(d => d.rate),
+      y: items.map(d => d.col),
+      marker: { color: fillColors },
+      text: items.map(d => d.rate + '%'),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 10, color: '#6c757d' },
+      hovertemplate: '%{y}: %{x}% complete<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'Metadata Column Fill Rates', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Fill rate (%)', range: [0, 115], gridcolor: '#eee', zeroline: false },
+      yaxis: { automargin: true, tickfont: { size: 11 } },
+      margin: { l: 150, r: 60, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 4: Mineral Subtypes (donut chart)
+     --------------------------------------------------------------- */
+  {
+    const items = METADATA.mineral_types.top;
+    Plotly.newPlot('fig-mineral-types', [{
+      type: 'pie',
+      labels: items.map(d => d.name),
+      values: items.map(d => d.count),
+      hole: 0.45,
+      textinfo: 'label+percent',
+      textposition: 'outside',
+      textfont: { family: 'Inter, sans-serif', size: 11 },
+      marker: {
+        colors: ['#1a5276','#2980b9','#5dade2','#85c1e9','#aed6f1','#d4e6f1'],
+      },
+      hovertemplate: '%{label}: %{value:,} (%{percent})<extra></extra>',
+      pull: [0.04, 0, 0, 0, 0, 0],
+    }], plotlyLayout({
+      title: { text: 'Mineral Subtypes (18 unique)', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      showlegend: true,
+      legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: -0.05, font: { size: 11 } },
+      margin: { l: 40, r: 40, t: 50, b: 60 },
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 5: Crystal Type & Rim/Core
+     --------------------------------------------------------------- */
+  {
+    // Crystal type bar chart
+    const ct = METADATA.crystal_types;
+    Plotly.newPlot('fig-crystal-type', [{
+      type: 'bar',
+      x: ct.map(d => d.name),
+      y: ct.map(d => d.count),
+      marker: { color: '#2c3e50' },
+      text: ct.map(d => fmtNum(d.count) + ' (' + d.pct + '%)'),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 10, color: '#6c757d' },
+      hovertemplate: '%{x}: %{y:,} (%{text})<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'Crystal Type Distribution', font: { size: 13, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { tickangle: -30, tickfont: { size: 11 } },
+      yaxis: { title: 'Count', gridcolor: '#eee', zeroline: false },
+      margin: { l: 60, r: 20, t: 40, b: 90 },
+    }), PLOTLY_CONFIG);
+
+    // Rim/Core bar chart
+    const rc = METADATA.rim_core;
+    Plotly.newPlot('fig-rim-core', [{
+      type: 'bar',
+      x: rc.map(d => d.name),
+      y: rc.map(d => d.count),
+      marker: { color: ['#1a5276','#2980b9','#5dade2'] },
+      text: rc.map(d => fmtNum(d.count) + ' (' + d.pct + '%)'),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 10, color: '#6c757d' },
+      hovertemplate: '%{x}: %{y:,} (%{text})<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'Rim/Core Position', font: { size: 13, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { tickfont: { size: 11 } },
+      yaxis: { title: 'Count', gridcolor: '#eee', zeroline: false },
+      margin: { l: 60, r: 20, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 6a: Missing rates
+     --------------------------------------------------------------- */
+  {
+    const entries = Object.entries(D.missing_rates)
+      .sort((a, b) => a[1] - b[1]);
+    const labels = entries.map(e => e[0]);
+    const values = entries.map(e => e[1]);
+    const colors = values.map(v => v > 50 ? '#c0392b' : v > 30 ? '#e67e22' : '#2c3e50');
+
+    Plotly.newPlot('fig-missing-rates', [{
+      type: 'bar',
+      orientation: 'h',
+      x: values,
+      y: labels,
+      marker: { color: colors },
+      text: values.map(v => v.toFixed(1) + '%'),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 10, color: '#6c757d' },
+      hovertemplate: '%{y}: %{x:.1f}%<extra></extra>',
+    }], plotlyLayout({
+      title: { text: '(a) Per-Feature Missing Rates', font: { size: 13, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Missing rate (%)', range: [0, 110], gridcolor: '#eee', zeroline: false },
+      yaxis: { automargin: true, tickfont: { size: 11 } },
+      margin: { l: 70, r: 60, t: 40, b: 50 },
+      shapes: [{
+        type: 'line', x0: 50, x1: 50, y0: -0.5, y1: labels.length - 0.5,
+        line: { color: '#c0392b', width: 1.5, dash: 'dash' }
+      }],
+      annotations: [{
+        x: 52, y: labels.length - 1, text: '50%', showarrow: false,
+        font: { size: 10, color: '#c0392b' }
+      }],
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 6b: Per-row missing distribution
+     --------------------------------------------------------------- */
+  {
+    const dist = D.xy_summary.major_miss_distribution;
+    const keys = Object.keys(dist).sort((a, b) => parseInt(a) - parseInt(b));
+    const vals = keys.map(k => dist[k]);
+
+    Plotly.newPlot('fig-missing-dist', [{
+      type: 'bar',
+      x: keys,
+      y: vals,
+      marker: { color: '#2c3e50' },
+      hovertemplate: '%{x} missing: %{y:,} rows<extra></extra>',
+    }], plotlyLayout({
+      title: { text: '(b) Per-Row Missing Count Distribution', font: { size: 13, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Number of missing major oxides', dtick: 1, gridcolor: '#eee' },
+      yaxis: { title: 'Number of rows', gridcolor: '#eee', zeroline: false },
+      margin: { l: 70, r: 20, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 7: Feature discrimination
+     --------------------------------------------------------------- */
+  {
+    // Consolidate Fe-related entries into a single "FeOT"
+    const fePattern = /^Fe[O₂₃Tt]+$|^FeO$/i;
+    const rawEntries = Object.entries(D.discrimination);
+    const feEntries = rawEntries.filter(([k]) => fePattern.test(k));
+    const nonFeEntries = rawEntries.filter(([k]) => !fePattern.test(k));
+    if (feEntries.length > 0) {
+      const maxFeVal = Math.max(...feEntries.map(e => e[1]));
+      nonFeEntries.push(['FeOT', maxFeVal]);
+    }
+    const entries = nonFeEntries.sort((a, b) => a[1] - b[1]);
+    const labels = entries.map(e => e[0]);
+    const values = entries.map(e => e[1]);
+    const maxVal = Math.max(...values);
+    const colors = values.map(v => {
+      const t = v / maxVal;
+      const r = Math.round(26 + (41 - 26) * (1 - t));
+      const g = Math.round(82 + (128 - 82) * (1 - t));
+      const b_c = Math.round(118 + (185 - 118) * (1 - t));
+      return `rgb(${r},${g},${b_c})`;
+    });
+
+    Plotly.newPlot('fig-discrimination', [{
+      type: 'bar',
+      orientation: 'h',
+      x: values,
+      y: labels,
+      marker: { color: colors },
+      text: values.map(v => v.toFixed(4)),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 10, color: '#6c757d' },
+      hovertemplate: '%{y}: CV = %{x:.4f}<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'Feature Discrimination (CV of Class Means)', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Coefficient of variation', gridcolor: '#eee', zeroline: false },
+      yaxis: { automargin: true, tickfont: { size: 11 } },
+      margin: { l: 70, r: 70, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 8: Correlation matrix
+     --------------------------------------------------------------- */
+  {
+    const cm = D.correlation_matrix;
+    const n = cm.labels.length;
+    const annotations = [];
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        const val = cm.values[i][j];
+        annotations.push({
+          x: cm.labels[j], y: cm.labels[i],
+          text: val.toFixed(2),
+          showarrow: false,
+          font: { size: 10, family: 'JetBrains Mono', color: Math.abs(val) > 0.55 ? '#fff' : '#333' }
+        });
+      }
+    }
+
+    Plotly.newPlot('fig-correlation', [{
+      type: 'heatmap',
+      z: cm.values,
+      x: cm.labels,
+      y: cm.labels,
+      colorscale: [
+        [0, '#2166ac'], [0.25, '#67a9cf'], [0.5, '#f7f7f7'],
+        [0.75, '#ef8a62'], [1, '#b2182b']
+      ],
+      zmin: -1, zmax: 1,
+      hoverongaps: false,
+      hovertemplate: '%{x} vs %{y}: r = %{z:.3f}<extra></extra>',
+      colorbar: {
+        title: { text: 'r', font: { size: 12 } },
+        thickness: 12,
+        len: 0.8,
+        tickfont: { size: 10 }
+      }
+    }], plotlyLayout({
+      title: { text: 'Oxide Correlation Matrix', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { tickfont: { size: 11 }, tickangle: -45, side: 'bottom' },
+      yaxis: { tickfont: { size: 11 }, autorange: 'reversed' },
+      margin: { l: 70, r: 20, t: 40, b: 80 },
+      annotations: annotations,
+      width: 580,
+      height: 520,
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 9: Box plots by tectonic setting (top 6 oxides)
+     --------------------------------------------------------------- */
+  {
+    // Top 6 by discrimination
+    const topOxides = Object.entries(D.discrimination)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(e => e[0]);
+
+    const settings = Object.keys(D.class_oxide_stats);
+    const grid = document.getElementById('fig-boxplots-grid');
+
+    topOxides.forEach((oxide, idx) => {
+      const divId = `fig-box-${idx}`;
+      const div = document.createElement('div');
+      div.id = divId;
+      div.style.height = '280px';
+      grid.appendChild(div);
+
+      const traces = [];
+      settings.forEach(setting => {
+        const st = D.class_oxide_stats[setting][oxide];
+        if (!st || !st.n) return;
+
+        // Find the full name to get color
+        const fullName = Object.keys(D.setting_short).find(k => D.setting_short[k] === setting) || '';
+        const color = SETTING_COLORS[fullName] || '#999';
+
+        const iqr = st.q3 - st.q1;
+        const lf = Math.max(st.q1 - 1.5 * iqr, st.min || st.q1 - 1.5 * iqr);
+        const uf = Math.min(st.q3 + 1.5 * iqr, st.max || st.q3 + 1.5 * iqr);
+
+        // Abbreviate setting name further for box plot labels
+        const abbr = setting.replace('Volcanics', 'Volc.')
+          .replace('Continental', 'Cont.')
+          .replace('Convergent', 'Conv.')
+          .replace('Intraplate', 'Intra.')
+          .replace('Basalt', 'Bas.')
+          .replace('Ocean-Basin', 'Oc.-Basin')
+          .replace('Submarine', 'Sub.');
+
+        traces.push({
+          type: 'box',
+          name: abbr,
+          q1: [st.q1],
+          median: [st.median],
+          q3: [st.q3],
+          lowerfence: [lf],
+          upperfence: [uf],
+          mean: [st.mean],
+          marker: { color: color },
+          line: { color: color },
+          fillcolor: color + '30',
+          hoverinfo: 'name+y',
+        });
+      });
+
+      Plotly.newPlot(divId, traces, plotlyLayout({
+        title: { text: oxide, font: { size: 13, family: 'Source Serif 4' }, x: 0.5, xanchor: 'center' },
+        yaxis: {
+          title: oxide.includes('(') ? '' : 'wt%',
+          gridcolor: '#eee',
+          zeroline: false,
+          tickfont: { size: 10 }
+        },
+        xaxis: {
+          tickfont: { size: 8 },
+          tickangle: -45,
+        },
+        showlegend: false,
+        margin: { l: 50, r: 10, t: 35, b: 80 },
+        height: 280,
+      }), PLOTLY_CONFIG);
+    });
+  }
+
+  /* ---------------------------------------------------------------
+     TABLE 2: Model performance (all 8 models)
+     --------------------------------------------------------------- */
+  {
+    const modelOrder = ['baseline', 'native_nan', 'subset_M1', 'subset_M2T0', 'hierarchical', 'excl_trace_missing', 'basalt_all', 'basalt_major'];
+    const bestF1 = Math.max(...modelOrder.map(k => D.models[k].f1m));
+    const bestPracticalKey = 'excl_trace_missing';
+    const tbody = document.getElementById('model-tbody');
+
+    tbody.innerHTML = modelOrder.map(key => {
+      const m = D.models[key];
+      const isHighlight = key === bestPracticalKey;
+      const isBestF1 = m.f1m === bestF1;
+      const f1Class = isBestF1 ? 'num bold' : 'num';
+      const rowClass = isHighlight ? ' class="model-highlight"' : '';
+
+      // Format metrics with +/- std for cv_verified models
+      const fmtMetric = (val, stdKey) => {
+        const std = m[stdKey];
+        if (m.cv_verified && std != null) {
+          return val.toFixed(4) + ' <span style="font-size:10px;color:var(--text-secondary);">&pm; ' + std.toFixed(4) + '</span>';
+        }
+        return val.toFixed(4);
+      };
+
+      const accText = fmtMetric(m.acc, 'acc_std');
+      const f1mRaw = fmtMetric(m.f1m, 'f1m_std');
+      const f1mText = isBestF1 ? `<strong>${f1mRaw}</strong>` : f1mRaw;
+      const f1wText = m.f1w ? fmtMetric(m.f1w, 'f1w_std') : '&mdash;';
+
+      return `<tr${rowClass}>
+        <td>${m.name}${isHighlight ? ' <span style="color:var(--success);font-size:11px;font-weight:600;">(best practical)</span>' : ''}</td>
+        <td>${m.algorithm}</td>
+        <td class="num">${m.features}</td>
+        <td class="num">${fmtNum(m.rows)}</td>
+        <td class="num">${accText}</td>
+        <td class="${f1Class}">${f1mText}</td>
+        <td class="num">${f1wText}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURE 10: Model comparison chart (all 8 models)
+     --------------------------------------------------------------- */
+  {
+    const modelOrder = ['baseline', 'native_nan', 'subset_M1', 'subset_M2T0', 'hierarchical', 'excl_trace_missing', 'basalt_all', 'basalt_major'];
+    const names = modelOrder.map(k => {
+      const n = D.models[k].name.replace(/ \(.*?\)/, '');
+      // Wrap long names
+      return n.length > 18 ? n.replace(/ /g, '<br>') : n;
+    });
+    const accs = modelOrder.map(k => D.models[k].acc);
+    const f1ms = modelOrder.map(k => D.models[k].f1m);
+    const barColors = modelOrder.map(k => k === 'excl_trace_missing' ? '#059669' : '#2980b9');
+    const accColors = modelOrder.map(k => k === 'excl_trace_missing' ? '#047857' : '#1a5276');
+
+    Plotly.newPlot('fig-model-compare', [
+      {
+        type: 'bar',
+        name: 'Accuracy',
+        x: names, y: accs,
+        marker: { color: accColors },
+        text: accs.map(v => v.toFixed(3)),
+        textposition: 'outside',
+        textfont: { family: 'JetBrains Mono', size: 9 },
+        hovertemplate: '%{x}: Acc = %{y:.4f}<extra></extra>',
+      },
+      {
+        type: 'bar',
+        name: 'F1-macro',
+        x: names, y: f1ms,
+        marker: { color: barColors },
+        text: f1ms.map(v => v.toFixed(3)),
+        textposition: 'outside',
+        textfont: { family: 'JetBrains Mono', size: 9 },
+        hovertemplate: '%{x}: F1m = %{y:.4f}<extra></extra>',
+      }
+    ], plotlyLayout({
+      barmode: 'group',
+      yaxis: { title: 'Score', range: [0.55, 1.05], gridcolor: '#eee', zeroline: false },
+      xaxis: { tickfont: { size: 10 }, tickangle: -30 },
+      legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: 1.08, font: { size: 12 } },
+      margin: { l: 55, r: 20, t: 50, b: 120 },
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     FIGURES 11-13: Feature Importance & SHAP (Interpretation section)
+     --------------------------------------------------------------- */
+  fetch('data/shap_data.json')
+    .then(r => r.json())
+    .then(S => {
+      renderFI(S);
+      renderSHAPGlobal(S);
+      renderSHAPHeatmap(S);
+      renderBeeswarm(S);
+    })
+    .catch(function() {
+      ['fig-fi','fig-shap-global','fig-shap-heatmap','fig-shap-beeswarm'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.innerHTML = '<div class="card" style="color:var(--text-secondary);font-size:13px;">SHAP data not yet available. Run the interpretation pipeline to generate <code>data/shap_data.json</code>.</div>';
+      });
+    });
+
+  function renderFI(S) {
+    const items = S.feature_importance.slice(0, 25);
+    const labels = items.map(d => d.feature).reverse();
+    const values = items.map(d => d.importance).reverse();
+
+    Plotly.newPlot('fig-fi', [{
+      type: 'bar',
+      orientation: 'h',
+      x: values,
+      y: labels,
+      marker: { color: '#1a5276' },
+      text: values.map(v => v.toFixed(4)),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 9, color: '#6c757d' },
+      hovertemplate: '%{y}: %{x:.4f}<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'XGBoost Feature Importance (Gain)', font: { size: 13, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Importance (gain)', gridcolor: '#eee', zeroline: false },
+      yaxis: { automargin: true, tickfont: { size: 10 } },
+      margin: { l: 100, r: 60, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+  }
+
+  function renderSHAPGlobal(S) {
+    const items = S.shap_global.slice(0, 25);
+    const labels = items.map(d => d.feature).reverse();
+    const values = items.map(d => d.mean_abs_shap).reverse();
+
+    Plotly.newPlot('fig-shap-global', [{
+      type: 'bar',
+      orientation: 'h',
+      x: values,
+      y: labels,
+      marker: { color: '#2980b9' },
+      text: values.map(v => v.toFixed(4)),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 9, color: '#6c757d' },
+      hovertemplate: '%{y}: %{x:.4f}<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'Mean |SHAP| Values (Global)', font: { size: 13, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Mean |SHAP value|', gridcolor: '#eee', zeroline: false },
+      yaxis: { automargin: true, tickfont: { size: 10 } },
+      margin: { l: 100, r: 60, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+  }
+
+  function renderSHAPHeatmap(S) {
+    const classNames = Object.keys(S.shap_per_class);
+    // Collect all features across classes, pick top 15 by max value
+    const featureSet = {};
+    classNames.forEach(cls => {
+      Object.entries(S.shap_per_class[cls]).forEach(([feat, val]) => {
+        featureSet[feat] = Math.max(featureSet[feat] || 0, val);
+      });
+    });
+    const topFeatures = Object.entries(featureSet)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(e => e[0]);
+
+    // Build z-matrix: rows = features, columns = classes
+    const z = topFeatures.map(feat =>
+      classNames.map(cls => {
+        const val = S.shap_per_class[cls][feat];
+        return val != null ? val : 0;
+      })
+    );
+
+    // Annotations
+    const annotations = [];
+    for (let i = 0; i < topFeatures.length; i++) {
+      for (let j = 0; j < classNames.length; j++) {
+        const val = z[i][j];
+        annotations.push({
+          x: classNames[j],
+          y: topFeatures[i],
+          text: val > 0 ? val.toFixed(2) : '',
+          showarrow: false,
+          font: { size: 9, family: 'JetBrains Mono', color: val > 0.5 ? '#fff' : '#333' }
+        });
+      }
+    }
+
+    Plotly.newPlot('fig-shap-heatmap', [{
+      type: 'heatmap',
+      z: z,
+      x: classNames,
+      y: topFeatures,
+      colorscale: 'YlOrRd',
+      hoverongaps: false,
+      hovertemplate: 'Feature: %{y}<br>Class: %{x}<br>Mean |SHAP|: %{z:.3f}<extra></extra>',
+      colorbar: {
+        title: { text: 'Mean |SHAP|', font: { size: 11 } },
+        thickness: 12,
+        len: 0.8,
+        tickfont: { size: 10 }
+      }
+    }], plotlyLayout({
+      title: { text: 'Per-Class Mean |SHAP| (Top 15 Features)', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { tickfont: { size: 10 }, tickangle: -35, side: 'bottom' },
+      yaxis: { tickfont: { size: 10 }, automargin: true },
+      margin: { l: 100, r: 20, t: 40, b: 130 },
+      annotations: annotations,
+    }), PLOTLY_CONFIG);
+  }
+
+  function renderBeeswarm(S) {
+    const featureKeys = Object.keys(S.shap_beeswarm);
+    // Take top 12 features (assume shap_beeswarm keys are in importance order,
+    // or sort by mean absolute SHAP)
+    const featureStats = featureKeys.map(feat => {
+      const vals = S.shap_beeswarm[feat].shap_values;
+      const meanAbs = vals.reduce((s, v) => s + Math.abs(v), 0) / vals.length;
+      return { feat, meanAbs };
+    }).sort((a, b) => b.meanAbs - a.meanAbs);
+    const topFeats = featureStats.slice(0, 12).map(d => d.feat);
+
+    const traces = [];
+    topFeats.forEach((feat, idx) => {
+      const data = S.shap_beeswarm[feat];
+      const shapVals = data.shap_values;
+      const featVals = data.feature_values;
+
+      // Normalize feature values to [0, 1] for coloring
+      const fMin = Math.min(...featVals);
+      const fMax = Math.max(...featVals);
+      const fRange = fMax - fMin || 1;
+      const normalized = featVals.map(v => (v - fMin) / fRange);
+
+      // Add small jitter to y-position for beeswarm effect
+      const yPos = topFeats.length - 1 - idx;
+      const jittered = shapVals.map(() => yPos + (Math.random() - 0.5) * 0.35);
+
+      traces.push({
+        type: 'scatter',
+        mode: 'markers',
+        x: shapVals,
+        y: jittered,
+        marker: {
+          size: 3,
+          color: normalized,
+          colorscale: 'RdBu_r',
+          opacity: 0.6,
+          showscale: idx === 0,
+          colorbar: idx === 0 ? {
+            title: { text: 'Feature value<br>(normalized)', font: { size: 10 } },
+            thickness: 10,
+            len: 0.5,
+            tickfont: { size: 9 },
+            tickvals: [0, 0.5, 1],
+            ticktext: ['Low', 'Mid', 'High'],
+          } : undefined,
+          cmin: 0,
+          cmax: 1,
+        },
+        hovertemplate: feat + '<br>SHAP: %{x:.3f}<extra></extra>',
+        showlegend: false,
+      });
+    });
+
+    const tickvals = topFeats.map((_, i) => topFeats.length - 1 - i);
+    const ticktext = topFeats;
+
+    Plotly.newPlot('fig-shap-beeswarm', traces, plotlyLayout({
+      title: { text: 'SHAP Beeswarm (Top 12 Features)', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: {
+        title: 'SHAP value (impact on model output)',
+        gridcolor: '#eee',
+        zeroline: true,
+        zerolinecolor: '#999',
+        zerolinewidth: 1,
+      },
+      yaxis: {
+        tickvals: tickvals,
+        ticktext: ticktext,
+        tickfont: { size: 10 },
+        automargin: true,
+      },
+      margin: { l: 100, r: 80, t: 40, b: 50 },
+      shapes: [{
+        type: 'line',
+        x0: 0, x1: 0,
+        y0: -0.5, y1: topFeats.length - 0.5,
+        line: { color: '#ccc', width: 1, dash: 'dot' }
+      }],
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     VALIDATION: Cross-Validation & Error Analysis
+     --------------------------------------------------------------- */
+  fetch('data/cv_results.json')
+    .then(r => r.json())
+    .then(CV => {
+      renderCVSummary(CV);
+      renderConfusionMatrix(CV);
+      renderPerClassTable(CV);
+      renderF1VsSize(CV);
+    })
+    .catch(function() {
+      document.getElementById('cv-summary').innerHTML =
+        '<div class="card" style="color:var(--text-secondary);font-size:13px;">Cross-validation results not yet available. Run the CV pipeline to generate <code>data/cv_results.json</code>.</div>';
+    });
+
+  function renderCVSummary(CV) {
+    const cs = CV.cv_scores;
+    const foldHtml = (metric) => {
+      const folds = cs[metric].folds;
+      return folds.map((v, i) => `Fold ${i + 1}: ${v.toFixed(4)}`).join('  &middot;  ');
+    };
+    const el = document.getElementById('cv-summary');
+    el.innerHTML = `
+      <div class="card" style="border-left:3px solid var(--accent);">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px;">
+          <h3 style="font-family:var(--font-heading);font-size:16px;font-weight:600;color:var(--text-heading);margin:0;">
+            ${CV.n_folds}-Fold Stratified Cross-Validation
+          </h3>
+          <span style="font-size:12px;color:var(--text-secondary);">
+            ${fmtNum(CV.n_samples)} samples &middot; ${CV.n_features} features
+          </span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);margin-bottom:4px;">Accuracy</div>
+            <div style="font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--text-heading);letter-spacing:-0.5px;">
+              ${cs.accuracy.mean.toFixed(4)}
+            </div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">&pm; ${cs.accuracy.std.toFixed(4)}</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:#adb5bd;margin-top:6px;line-height:1.6;">${foldHtml('accuracy')}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);margin-bottom:4px;">F1-macro</div>
+            <div style="font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--text-heading);letter-spacing:-0.5px;">
+              ${cs.f1_macro.mean.toFixed(4)}
+            </div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">&pm; ${cs.f1_macro.std.toFixed(4)}</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:#adb5bd;margin-top:6px;line-height:1.6;">${foldHtml('f1_macro')}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);margin-bottom:4px;">F1-weighted</div>
+            <div style="font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--text-heading);letter-spacing:-0.5px;">
+              ${cs.f1_weighted.mean.toFixed(4)}
+            </div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">&pm; ${cs.f1_weighted.std.toFixed(4)}</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:#adb5bd;margin-top:6px;line-height:1.6;">${foldHtml('f1_weighted')}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function renderConfusionMatrix(CV) {
+    const cm = CV.confusion_matrix;
+    const labels = cm.labels;
+    const zNorm = cm.matrix_normalized;
+    const zRaw = cm.matrix;
+    const n = labels.length;
+
+    // Build annotations: show normalized value and raw count
+    const annotations = [];
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        const normVal = zNorm[i][j];
+        const rawVal = zRaw[i][j];
+        // Show value only if non-negligible, to reduce clutter
+        let text = '';
+        if (normVal >= 0.005) {
+          text = normVal.toFixed(2);
+          if (rawVal > 0) text += `<br><span style="font-size:8px">(${rawVal})</span>`;
+        }
+        annotations.push({
+          x: labels[j],
+          y: labels[i],
+          text: text,
+          showarrow: false,
+          font: {
+            size: 9,
+            family: 'JetBrains Mono',
+            color: normVal > 0.5 ? '#ffffff' : '#333333'
+          }
+        });
+      }
+    }
+
+    Plotly.newPlot('fig-confusion', [{
+      type: 'heatmap',
+      z: zNorm,
+      x: labels,
+      y: labels,
+      colorscale: [
+        [0, '#ffffff'],
+        [0.15, '#deebf7'],
+        [0.3, '#9ecae1'],
+        [0.5, '#4292c6'],
+        [0.7, '#2171b5'],
+        [0.85, '#084594'],
+        [1, '#042a5e']
+      ],
+      zmin: 0,
+      zmax: 1,
+      hoverongaps: false,
+      hovertemplate: 'True: %{y}<br>Predicted: %{x}<br>Rate: %{z:.3f}<extra></extra>',
+      colorbar: {
+        title: { text: 'Recall', font: { size: 11 } },
+        thickness: 12,
+        len: 0.8,
+        tickfont: { size: 10 }
+      }
+    }], plotlyLayout({
+      title: { text: 'Normalized Confusion Matrix', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: {
+        title: 'Predicted',
+        tickfont: { size: 10 },
+        tickangle: -40,
+        side: 'bottom',
+        automargin: true
+      },
+      yaxis: {
+        title: 'True',
+        tickfont: { size: 10 },
+        autorange: 'reversed',
+        automargin: true
+      },
+      margin: { l: 130, r: 20, t: 40, b: 140 },
+      annotations: annotations,
+      width: null,
+      height: 640,
+    }), PLOTLY_CONFIG);
+  }
+
+  function renderPerClassTable(CV) {
+    const metrics = CV.per_class_metrics.slice().sort((a, b) => b.f1 - a.f1);
+    const bestF1 = metrics[0].f1;
+    const worstF1 = metrics[metrics.length - 1].f1;
+
+    let tableHtml = `
+      <p class="table-caption"><strong>Table 3.</strong> Per-class precision, recall, and F1-score from aggregated out-of-fold predictions (${CV.n_folds}-fold CV, n = ${fmtNum(CV.n_samples)}).</p>
+      <div class="table-wrap">
+        <table class="journal" id="perclass-metrics-table">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th style="text-align:right">Precision</th>
+              <th style="text-align:right">Recall</th>
+              <th style="text-align:right">F1-score</th>
+              <th style="text-align:right">Support</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+    metrics.forEach(row => {
+      let f1Style = '';
+      if (row.f1 === bestF1) f1Style = 'font-weight:700;color:#059669;';
+      else if (row.f1 === worstF1) f1Style = 'font-weight:700;color:#dc3545;';
+
+      tableHtml += `
+            <tr>
+              <td>${row.class}</td>
+              <td class="num">${row.precision.toFixed(4)}</td>
+              <td class="num">${row.recall.toFixed(4)}</td>
+              <td class="num" style="${f1Style}">${row.f1.toFixed(4)}</td>
+              <td class="num">${fmtNum(row.support)}</td>
+            </tr>`;
+    });
+
+    tableHtml += `
+          </tbody>
+        </table>
+      </div>`;
+
+    document.getElementById('per-class-table').innerHTML = tableHtml;
+  }
+
+  function renderF1VsSize(CV) {
+    const metrics = CV.per_class_metrics;
+    const supports = metrics.map(d => d.support);
+    const f1s = metrics.map(d => d.f1);
+    const classNames = metrics.map(d => d.class);
+
+    // Map class names to colors from SETTING_COLORS (need to find matching keys)
+    const colors = classNames.map(cls => {
+      // Try to match class name against SETTING_COLORS keys
+      const upperCls = cls.toUpperCase();
+      const match = Object.keys(SETTING_COLORS).find(k => {
+        const shortK = (D.setting_short && D.setting_short[k]) || k;
+        return shortK === cls || k === upperCls || k.includes(upperCls) || upperCls.includes(shortK.toUpperCase());
+      });
+      return match ? SETTING_COLORS[match] : '#666';
+    });
+
+    Plotly.newPlot('fig-f1-vs-size', [{
+      type: 'scatter',
+      mode: 'markers+text',
+      x: supports,
+      y: f1s,
+      text: classNames,
+      textposition: 'top center',
+      textfont: { size: 9, family: 'Inter, sans-serif', color: '#6c757d' },
+      marker: {
+        size: 12,
+        color: colors,
+        line: { color: '#ffffff', width: 1.5 },
+        opacity: 0.9
+      },
+      hovertemplate: '%{text}<br>Support: %{x:,}<br>F1: %{y:.4f}<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'F1-Score vs. Class Sample Size', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: {
+        title: 'Support (sample count)',
+        type: 'log',
+        gridcolor: '#eee',
+        zeroline: false,
+        tickfont: { size: 11 }
+      },
+      yaxis: {
+        title: 'F1-score',
+        gridcolor: '#eee',
+        zeroline: false,
+        tickfont: { size: 11 },
+        range: [
+          Math.max(0, Math.min(...f1s) - 0.05),
+          Math.min(1, Math.max(...f1s) + 0.03)
+        ]
+      },
+      margin: { l: 60, r: 30, t: 40, b: 55 },
+      showlegend: false,
+      height: 420,
+    }), PLOTLY_CONFIG);
+  }
+
+  /* ---------------------------------------------------------------
+     BASALT SUBSET EXPERIMENT
+     --------------------------------------------------------------- */
+  fetch('data/basalt_results.json')
+    .then(r => r.json())
+    .then(B => {
+      renderBasaltSummary(B);
+      renderBasaltBreakdown(B);
+      renderBasaltComparison(B);
+      renderBasaltConfusion(B);
+      renderBasaltPerClassTable(B);
+    })
+    .catch(function() {
+      document.getElementById('basalt-summary').innerHTML =
+        '<div class="card" style="color:var(--text-secondary);font-size:13px;">Basalt experiment results not yet available. Run the basalt subset pipeline to generate <code>data/basalt_results.json</code>.</div>';
+    });
+
+  function renderBasaltSummary(B) {
+    document.getElementById('basalt-summary').innerHTML = `
+      <div class="card" style="border-left:3px solid var(--accent);">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+          <h3 style="font-family:var(--font-heading);font-size:16px;font-weight:600;color:var(--text-heading);margin:0;">
+            Basalt Subset
+          </h3>
+          <span style="font-family:var(--font-mono);font-size:13px;color:var(--text-secondary);">
+            ${fmtNum(B.n_total_basalt)} samples (22% of dataset) &middot; ${B.n_classes} tectonic settings
+          </span>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:8px;">
+          Filtered by ROCK NAME containing &ldquo;BASALT&rdquo;. Tests whether clinopyroxene chemistry alone can discriminate tectonic settings when lithological diversity is removed.
+        </div>
+      </div>`;
+  }
+
+  function renderBasaltBreakdown(B) {
+    const entries = Object.entries(B.rock_breakdown).sort((a, b) => a[1] - b[1]);
+    const labels = entries.map(e => e[0]);
+    const values = entries.map(e => e[1]);
+    const maxVal = Math.max(...values);
+    const colors = values.map(v => {
+      const t = v / maxVal;
+      return `rgba(26, 82, 118, ${0.3 + 0.7 * t})`;
+    });
+
+    Plotly.newPlot('fig-basalt-breakdown', [{
+      type: 'bar',
+      orientation: 'h',
+      x: values,
+      y: labels,
+      marker: { color: colors },
+      text: values.map(v => fmtNum(v)),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 10, color: '#6c757d' },
+      hovertemplate: '%{y}: %{x:,}<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'Basalt Rock Name Breakdown', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: { title: 'Number of samples', gridcolor: '#eee', zeroline: false },
+      yaxis: { automargin: true, tickfont: { size: 10 } },
+      margin: { l: 200, r: 70, t: 40, b: 50 },
+    }), PLOTLY_CONFIG);
+  }
+
+  function renderBasaltComparison(B) {
+    const categories = ['Full Dataset<br>(All Features)', 'Basalt<br>(All Features)', 'Basalt<br>(Major Only)'];
+    const f1Values = [0.909, B.all_features.cv_scores.f1_macro.mean, B.major_only.cv_scores.f1_macro.mean];
+    const f1Errors = [0.005, B.all_features.cv_scores.f1_macro.std, B.major_only.cv_scores.f1_macro.std];
+    const barColors = ['#059669', '#2980b9', '#5dade2'];
+
+    Plotly.newPlot('fig-basalt-compare', [{
+      type: 'bar',
+      x: categories,
+      y: f1Values,
+      error_y: {
+        type: 'data',
+        array: f1Errors,
+        visible: true,
+        color: '#333',
+        thickness: 1.5,
+        width: 6,
+      },
+      marker: { color: barColors },
+      text: f1Values.map((v, i) => v.toFixed(3) + ' \u00b1 ' + f1Errors[i].toFixed(3)),
+      textposition: 'outside',
+      textfont: { family: 'JetBrains Mono', size: 11, color: '#333' },
+      hovertemplate: '%{x}: F1m = %{y:.4f} \u00b1 %{error_y.array:.4f}<extra></extra>',
+    }], plotlyLayout({
+      title: { text: 'F1-macro Comparison: Basalt vs Full Dataset', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      yaxis: {
+        title: 'F1-macro',
+        range: [0, 1.05],
+        gridcolor: '#eee',
+        zeroline: false,
+      },
+      xaxis: { tickfont: { size: 12 } },
+      margin: { l: 60, r: 20, t: 50, b: 80 },
+      shapes: [{
+        type: 'line',
+        x0: -0.5, x1: 2.5,
+        y0: 0.909, y1: 0.909,
+        line: { color: '#059669', width: 1, dash: 'dash' },
+      }],
+      annotations: [{
+        x: 2.4, y: 0.925,
+        text: 'Full dataset baseline',
+        showarrow: false,
+        font: { size: 10, color: '#059669', family: 'Inter' },
+      }],
+    }), PLOTLY_CONFIG);
+  }
+
+  function renderBasaltConfusion(B) {
+    const cm = B.all_features.confusion_matrix;
+    const labels = cm.labels;
+    const zNorm = cm.matrix_normalized;
+    const zRaw = cm.matrix;
+    const n = labels.length;
+
+    const annotations = [];
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        const normVal = zNorm[i][j];
+        const rawVal = zRaw[i][j];
+        let text = '';
+        if (normVal >= 0.005) {
+          text = normVal.toFixed(2);
+          if (rawVal > 0) text += '<br><span style="font-size:8px">(' + rawVal + ')</span>';
+        }
+        annotations.push({
+          x: labels[j],
+          y: labels[i],
+          text: text,
+          showarrow: false,
+          font: {
+            size: 9,
+            family: 'JetBrains Mono',
+            color: normVal > 0.5 ? '#ffffff' : '#333333'
+          }
+        });
+      }
+    }
+
+    Plotly.newPlot('fig-basalt-confusion', [{
+      type: 'heatmap',
+      z: zNorm,
+      x: labels,
+      y: labels,
+      colorscale: [
+        [0, '#ffffff'],
+        [0.15, '#deebf7'],
+        [0.3, '#9ecae1'],
+        [0.5, '#4292c6'],
+        [0.7, '#2171b5'],
+        [0.85, '#084594'],
+        [1, '#042a5e']
+      ],
+      zmin: 0,
+      zmax: 1,
+      hoverongaps: false,
+      hovertemplate: 'True: %{y}<br>Predicted: %{x}<br>Rate: %{z:.3f}<extra></extra>',
+      colorbar: {
+        title: { text: 'Recall', font: { size: 11 } },
+        thickness: 12,
+        len: 0.8,
+        tickfont: { size: 10 }
+      }
+    }], plotlyLayout({
+      title: { text: 'Basalt Subset — Normalized Confusion Matrix (All Features)', font: { size: 14, family: 'Source Serif 4' }, x: 0 },
+      xaxis: {
+        title: 'Predicted',
+        tickfont: { size: 10 },
+        tickangle: -40,
+        side: 'bottom',
+        automargin: true
+      },
+      yaxis: {
+        title: 'True',
+        tickfont: { size: 10 },
+        autorange: 'reversed',
+        automargin: true
+      },
+      margin: { l: 130, r: 20, t: 40, b: 140 },
+      annotations: annotations,
+      width: null,
+      height: 640,
+    }), PLOTLY_CONFIG);
+  }
+
+  function renderBasaltPerClassTable(B) {
+    const metrics = B.all_features.per_class_metrics.slice().sort((a, b) => b.f1 - a.f1);
+    const bestF1 = metrics[0].f1;
+    const worstF1 = metrics[metrics.length - 1].f1;
+
+    let tableHtml = `
+      <p class="table-caption"><strong>Table 4.</strong> Per-class precision, recall, and F1-score for the basalt subset (5-fold CV, all features, n = ${fmtNum(B.all_features.n_samples)}).</p>
+      <div class="table-wrap">
+        <table class="journal">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th style="text-align:right">Precision</th>
+              <th style="text-align:right">Recall</th>
+              <th style="text-align:right">F1-score</th>
+              <th style="text-align:right">Support</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+    metrics.forEach(row => {
+      let f1Style = '';
+      if (row.f1 === bestF1) f1Style = 'font-weight:700;color:#059669;';
+      else if (row.f1 === worstF1) f1Style = 'font-weight:700;color:#dc3545;';
+
+      tableHtml += `
+            <tr>
+              <td>${row.class}</td>
+              <td class="num">${row.precision.toFixed(4)}</td>
+              <td class="num">${row.recall.toFixed(4)}</td>
+              <td class="num" style="${f1Style}">${row.f1.toFixed(4)}</td>
+              <td class="num">${fmtNum(row.support)}</td>
+            </tr>`;
+    });
+
+    tableHtml += `
+          </tbody>
+        </table>
+      </div>`;
+
+    document.getElementById('basalt-per-class-table').innerHTML = tableHtml;
+  }
+
+  /* ---------------------------------------------------------------
+     MAP
+     --------------------------------------------------------------- */
+  const map = L.map('sample-map', {
+    center: [20, 0],
+    zoom: 2,
+    zoomControl: true,
+    preferCanvas: true,
+    worldCopyJump: true,
+    maxBoundsViscosity: 0,
+  });
+
+  // Base layers — geological + reference
+  const baseLayers = {
+    'Macrostrat Geology': L.tileLayer('https://tiles.macrostrat.org/carto/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://macrostrat.org">Macrostrat</a>',
+      maxZoom: 16,
+    }),
+    'Terrain': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+      subdomains: 'abc', maxZoom: 17,
+    }),
+    'Esri Physical': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri',
+      maxZoom: 8,
+    }),
+    'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri',
+      maxZoom: 18,
+    }),
+    'Clean': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd', maxZoom: 19,
+    }),
+  };
+  baseLayers['Macrostrat Geology'].addTo(map);
+  L.control.layers(baseLayers, null, { position: 'bottomleft', collapsed: false }).addTo(map);
+  L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+  // --- Load full 211K geo data for heatmap + by-setting views ---
+  let heatLayer = null;
+  let settingLayers = L.layerGroup();
+  let geoAllData = null;
+  let mapTotalCount = 0;
+  const mapCounts = {};
+
+  // Cluster layer uses the 20K detailed samples from viz_data.json
+  const samples = D.samples || [];
+  const clusterGroup = L.markerClusterGroup({
+    chunkedLoading: true,
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    disableClusteringAtZoom: 10,
+  });
+  samples.forEach(s => {
+    const color = SETTING_COLORS[s.ts] || '#999';
+    const marker = L.circleMarker([s.lat, s.lon], {
+      radius: 5, fillColor: color, color: '#fff', weight: 1, fillOpacity: 0.85,
+    });
+    marker.bindPopup(buildPopup(s));
+    clusterGroup.addLayer(marker);
+  });
+
+  // Load all 211K points asynchronously
+  fetch('data/geo_all.json')
+    .then(r => r.json())
+    .then(geo => {
+      geoAllData = geo;
+      mapTotalCount = geo.all.length;
+      document.getElementById('map-total').textContent = fmtNum(mapTotalCount);
+
+      // Build heatmap from ALL 211K points
+      const heatPts = geo.all.map(p => [p[0], p[1], 1]);
+      heatLayer = L.heatLayer(heatPts, {
+        radius: 12, blur: 18, maxZoom: 8, minOpacity: 0.2,
+        gradient: { 0.0: '#ffffcc', 0.15: '#fed976', 0.3: '#fd8d3c', 0.5: '#e31a1c', 0.7: '#bd0026', 0.9: '#4a0014' }
+      });
+      heatLayer.addTo(map);
+
+      // Build per-setting canvas layers from ALL 211K points
+      const renderer = L.canvas({ padding: 0.5 });
+      Object.entries(geo.by_setting).forEach(([shortName, pts]) => {
+        // Find full name for color lookup
+        const fullName = Object.keys(SETTING_COLORS).find(k =>
+          (D.setting_short[k] || k) === shortName) || shortName;
+        const color = SETTING_COLORS[fullName] || '#999';
+        mapCounts[fullName] = pts.length;
+        pts.forEach(p => {
+          const m = L.circleMarker([p[0], p[1]], {
+            radius: 3.5, fillColor: color, color: '#ffffff',
+            weight: 1, fillOpacity: 0.75, renderer: renderer
+          });
+          settingLayers.addLayer(m);
+        });
+      });
+
+      renderLegend('');
+      document.getElementById('cap-fig19').innerHTML =
+        '<strong>Figure 19.</strong> Global distribution of ' + fmtNum(mapTotalCount) +
+        ' clinopyroxene analyses. Density view shows sample concentration; By Setting view colors all points by tectonic environment (canvas-rendered for performance); Cluster view aggregates 20K representative samples with interactive popups.';
+    })
+    .catch(() => {
+      // Fallback to viz_data samples
+      mapTotalCount = samples.length;
+      document.getElementById('map-total').textContent = fmtNum(mapTotalCount);
+      heatLayer = L.heatLayer(samples.map(s => [s.lat, s.lon, 1]), {
+        radius: 15, blur: 20, maxZoom: 8,
+        gradient: { 0.0: '#ffffcc', 0.15: '#fed976', 0.3: '#fd8d3c', 0.5: '#e31a1c', 0.7: '#bd0026', 0.9: '#4a0014' }
+      });
+      heatLayer.addTo(map);
+      Object.keys(SETTING_COLORS).forEach(k => {
+        const ss = samples.filter(s => s.ts === k);
+        mapCounts[k] = ss.length;
+      });
+      renderLegend('');
+    });
+
+  function buildPopup(s) {
+    const sn = shortName(s.ts);
+    const color = SETTING_COLORS[s.ts] || '#999';
+    let html = `<div style="font-family:Inter,sans-serif;font-size:12px;line-height:1.5;max-width:240px;">`;
+    html += `<div style="font-weight:600;margin-bottom:4px;color:${color};">${sn}</div>`;
+    if (s.rock) html += `<div style="color:#6c757d;font-size:11px;margin-bottom:4px;">${s.rock}</div>`;
+    if (s.loc) html += `<div style="color:#6c757d;font-size:11px;margin-bottom:6px;word-wrap:break-word;">${s.loc}</div>`;
+    const oxides = ['sio2','tio2','al2o3','cao','mgo','na2o','feot','cr2o3'];
+    const oxideLabels = ['SiO\u2082','TiO\u2082','Al\u2082O\u2083','CaO','MgO','Na\u2082O','FeOt','Cr\u2082O\u2083'];
+    html += `<table style="border-collapse:collapse;width:100%;font-size:11px;">`;
+    oxides.forEach((key, i) => {
+      if (s[key] != null) {
+        html += `<tr><td style="padding:1px 6px 1px 0;color:#6c757d;">${oxideLabels[i]}</td>`;
+        html += `<td style="padding:1px 0;font-family:JetBrains Mono,monospace;text-align:right;">${s[key].toFixed(2)}</td></tr>`;
+      }
+    });
+    html += `</table></div>`;
+    return html;
+  }
+
+  // Default: density view
+  let currentMode = 'density';
+
+  function removeCurrentLayer() {
+    if (currentMode === 'density' && heatLayer) map.removeLayer(heatLayer);
+    else if (currentMode === 'by-setting') map.removeLayer(settingLayers);
+    else if (currentMode === 'cluster') map.removeLayer(clusterGroup);
+  }
+  function addLayer(mode) {
+    if (mode === 'density' && heatLayer) heatLayer.addTo(map);
+    else if (mode === 'by-setting') settingLayers.addTo(map);
+    else if (mode === 'cluster') clusterGroup.addTo(map);
+  }
+
+  const mapControls = document.getElementById('map-controls');
+  mapControls.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const mode = btn.dataset.mode;
+    if (mode === currentMode) return;
+    removeCurrentLayer();
+    addLayer(mode);
+    currentMode = mode;
+    mapControls.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+  });
+
+  // Side panel
+  document.getElementById('map-total').textContent = '...';
+
+  function renderLegend(filter) {
+    const legendDiv = document.getElementById('map-legend');
+    const sorted = Object.entries(mapCounts).sort((a, b) => b[1] - a[1]);
+    const maxCount = sorted.length > 0 ? sorted[0][1] : 1;
+    const totalAll = sorted.reduce((s, e) => s + e[1], 0) || 1;
+    const lowerFilter = (filter || '').toLowerCase();
+    legendDiv.innerHTML = sorted
+      .filter(([k]) => shortName(k).toLowerCase().includes(lowerFilter))
+      .map(([fullName, count]) => {
+        const sn = shortName(fullName);
+        const color = SETTING_COLORS[fullName] || '#999';
+        const pct = (100 * count / totalAll).toFixed(1);
+        const barW = (100 * count / maxCount).toFixed(1);
+        return `<div class="legend-row">
+          <div class="legend-dot" style="background:${color};"></div>
+          <div class="legend-info">
+            <div class="legend-name" title="${sn}">${sn}</div>
+            <div class="legend-bar-wrap"><div class="legend-bar-fill" style="width:${barW}%;background:${color};opacity:0.6;"></div></div>
+          </div>
+          <div>
+            <div class="legend-count">${fmtNum(count)}</div>
+            <div class="legend-pct">${pct}%</div>
+          </div>
+        </div>`;
+      }).join('');
+  }
+  renderLegend('');
+
+  document.getElementById('map-search').addEventListener('input', (e) => {
+    renderLegend(e.target.value);
+  });
+
+  document.getElementById('cap-fig19').innerHTML =
+    `<strong>Figure 19.</strong> Global distribution of 211,773 clinopyroxene analyses colored by tectonic setting. Toggle between density heatmap, by-setting, and clustered point views.`;
+
+  // Invalidate map size after layout settles
+  setTimeout(() => { map.invalidateSize(); }, 200);
+
+  /* ---------------------------------------------------------------
+     DONE — hide loader
+     --------------------------------------------------------------- */
+  const overlay = document.getElementById('loading-overlay');
+  overlay.classList.add('hidden');
+  setTimeout(() => overlay.remove(), 500);
+
+})();
+</script>
+</body>
+</html>
