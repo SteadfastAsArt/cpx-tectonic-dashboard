@@ -737,12 +737,13 @@ table.journal tbody tr.model-row.model-highlight {
   <div class="container">
     <h2 class="section-title">Model Comparison</h2>
 
-    <p class="table-caption"><strong>Table 2.</strong> Classification performance across 10 experiments grouped by data subset. All models use XGBoost with Bayesian hyperparameter tuning. Models with &pm; report 5-fold cross-validation mean and standard deviation.</p>
+    <p class="table-caption"><strong>Table 2.</strong> Classification performance across 14 experiments grouped by data subset. All use XGBoost (hist, depth=12, lr=0.08, 400 trees, balanced weights). &pm; = 5-fold stratified CV mean and std.</p>
     <div class="table-wrap">
       <table class="journal" id="model-table">
         <thead>
           <tr>
-            <th>Strategy</th>
+            <th style="min-width:220px;">Strategy</th>
+            <th style="min-width:260px;">Data Subset Description</th>
             <th style="text-align:right">Rows</th>
             <th style="text-align:right">Feat</th>
             <th style="text-align:right">Classes</th>
@@ -1490,20 +1491,36 @@ table.journal tbody tr.model-row.model-highlight {
       },
     ];
 
+    // Detailed description for each model — explains exactly what subset + features
+    const modelDesc = {
+      'baseline': 'All rows with target. Drop columns >80% missing, median impute rest. RF/XGB/LGBM/MLP compared, XGBoost best.',
+      'native_nan': 'All 203K rows (incl. rows with some missing target-adjacent cols). XGBoost native NaN — no imputation at all.',
+      'full_dataset_cv': 'Same as Native NaN but validated with 5-fold CV instead of single 80/20 split.',
+      'hierarchical': 'Stage 1: XGBoost on 18 major+endmember features (all rows). Stage 2: refine with trace elements where available (≥10 trace values).',
+      'subset_M1': 'Rows with ≤1 missing major oxide. 18 features (11 major + 7 endmembers). Median impute remaining NaN.',
+      'm1_all_features': 'Same M1 row filter (≤1 major missing) but using all 50 features. Native NaN for sparse trace columns.',
+      'subset_M2T0': 'Rows with ≤2 major missing AND all 32 trace elements present. Only 1,195 rows survive — near-perfect but tiny.',
+      'excl_trace_missing': 'Exclude 172K rows where ALL 32 trace elements are NaN. Keep 39,631 rows with ≥1 trace value. Native NaN.',
+      'excl_trace_major_only': 'Same 39,631 rows as above, but only 11 major oxide features — isolates trace element contribution.',
+      'basalt_all': 'ROCK NAME contains "BASALT" (basalt, basaltic-andesite, trachybasalt, alkali basalt, etc.). All 50 features, native NaN.',
+      'basalt_major': 'Same basalt filter. Only 11 major oxide features — shows how much trace elements help within basalt.',
+      'basalt_phenocryst_all': 'Basaltic rock + CRYSTAL = phenocryst or microphenocryst. 9,653 rows, 10 classes (Archean Craton excluded: n=1).',
+      'basalt_phenocryst_major': 'Same basalt+phenocryst filter. Major oxides only.',
+      'basalt_pheno_excl_trace': 'Basalt+phenocryst, further filtered to rows with ≥1 trace element. Only 783 rows but 8 classes, near-perfect.',
+    };
+
     const bestPracticalKey = 'excl_trace_missing';
     const tbody = document.getElementById('model-tbody');
     let html = '';
 
     for (const group of modelGroups) {
-      // Group header row
       html += `<tr class="group-header">
-        <td colspan="7" style="border-left: 4px solid ${group.color};">
+        <td colspan="8" style="border-left: 4px solid ${group.color};">
           <span class="group-label" style="color: ${group.color};">${group.label}</span>
           <span class="group-desc">${group.desc}</span>
         </td>
       </tr>`;
 
-      // Data rows for each model in the group
       for (const key of group.keys) {
         const m = D.models[key];
         if (!m) continue;
@@ -1511,7 +1528,6 @@ table.journal tbody tr.model-row.model-highlight {
         const isCv = m.cv_verified && m.f1m_std != null;
         const validation = isCv ? '5-fold CV' : '80/20 split';
 
-        // Format metrics: mean +/- std for CV models, plain value otherwise
         const fmtMetric = (val, stdKey) => {
           const std = m[stdKey];
           if (isCv && std != null) {
@@ -1526,11 +1542,13 @@ table.journal tbody tr.model-row.model-highlight {
 
         const namePrefix = isHighlight ? '<span class="star-prefix">&#9733;</span>' : '';
         const nameSuffix = isHighlight ? ' <span style="color:var(--success);font-size:10px;font-weight:600;">(best practical)</span>' : '';
+        const desc = modelDesc[key] || m.desc || '';
 
         const rowClass = isHighlight ? 'model-row model-highlight' : 'model-row';
 
         html += `<tr class="${rowClass}">
           <td style="border-left: 4px solid ${group.color}; padding-left: 16px;">${namePrefix}${m.name}${nameSuffix}</td>
+          <td style="font-size:11px;color:var(--text-secondary);line-height:1.4;max-width:300px;">${desc}</td>
           <td class="num">${fmtNum(m.rows)}</td>
           <td class="num">${m.features}</td>
           <td class="num">${m.n_classes || 11}</td>
@@ -2589,9 +2607,9 @@ table.journal tbody tr.model-row.model-highlight {
     const s = predictionData.summary;
     const correctPct = (s.accuracy * 100).toFixed(1);
 
-    // Update top stats
+    // Update top stats — clearly state which dataset
     document.getElementById('map-total').textContent = fmtNum(s.total);
-    document.querySelector('#map-panel .stat-label').textContent = 'model predictions';
+    document.querySelector('#map-panel .stat-label').innerHTML = 'OOF predictions<br><span style="font-size:9px;letter-spacing:0;text-transform:none;font-weight:400;color:#6c757d;">Subset: excl full-trace-missing (39,631 rows)<br>Model: XGBoost 50 feat, 5-fold CV, F1m=0.909</span>';
 
     // Update legend title
     document.querySelector('.map-legend-title').textContent = 'Per-Class Accuracy';
