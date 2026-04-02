@@ -1481,13 +1481,13 @@ table.journal tbody tr.model-row.model-highlight {
         label: 'C. Basalt Subset',
         desc: 'ROCK NAME contains "BASALT" — 46,530 rows (22% of dataset), all crystal types',
         color: '#d97706',
-        keys: ['basalt_all', 'basalt_major'],
+        keys: ['basalt_all', 'basalt_major', 'basalt_excl_trace_all', 'basalt_excl_trace_major'],
       },
       {
         label: 'D. Basalt + Phenocryst',
         desc: 'Basaltic rock + phenocryst/microphenocryst CPX only',
         color: '#7c3aed',
-        keys: ['basalt_phenocryst_all', 'basalt_phenocryst_major', 'basalt_pheno_excl_trace'],
+        keys: ['basalt_phenocryst_all', 'basalt_phenocryst_major', 'basalt_pheno_excl_trace', 'basalt_pheno_excl_trace_major'],
       },
     ];
 
@@ -1507,6 +1507,9 @@ table.journal tbody tr.model-row.model-highlight {
       'basalt_phenocryst_all': 'Basaltic rock + CRYSTAL = phenocryst or microphenocryst. 9,653 rows, 10 classes (Archean Craton excluded: n=1).',
       'basalt_phenocryst_major': 'Same basalt+phenocryst filter. Major oxides only.',
       'basalt_pheno_excl_trace': 'Basalt+phenocryst, further filtered to rows with ≥1 trace element. Only 783 rows but 8 classes, near-perfect.',
+      'basalt_excl_trace_all': 'Basalt (all crystal types) + excl full-trace-missing. 3,298 rows with ≥1 trace value. All 50 features.',
+      'basalt_excl_trace_major': 'Basalt + trace rows, but only 11 major oxides. Isolates trace contribution: F1m drops from 0.904 to 0.576.',
+      'basalt_pheno_excl_trace_major': 'Basalt phenocryst + trace rows, major oxides only. Small n (783) causes high variance (±0.068).',
     };
 
     const bestPracticalKey = 'excl_trace_missing';

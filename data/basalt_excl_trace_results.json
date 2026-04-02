@@ -1,0 +1,1298 @@
+{
+  "basalt_excl_trace_all": {
+    "description": "Basalt (all crystal) + excl full-trace-missing, all 50 features",
+    "cv_scores": {
+      "accuracy": {
+        "mean": 0.9406,
+        "std": 0.0069,
+        "folds": [
+          0.9485,
+          0.9394,
+          0.9485,
+          0.9317,
+          0.9347
+        ]
+      },
+      "f1_macro": {
+        "mean": 0.9041,
+        "std": 0.0113,
+        "folds": [
+          0.9253,
+          0.8923,
+          0.9035,
+          0.9024,
+          0.897
+        ]
+      },
+      "f1_weighted": {
+        "mean": 0.9405,
+        "std": 0.0069,
+        "folds": [
+          0.9482,
+          0.9394,
+          0.9488,
+          0.9325,
+          0.9337
+        ]
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "Archean Craton",
+        "Complex Volcanic",
+        "Cont. Flood Basalt",
+        "Convergent Margin",
+        "Intraplate Volcanics",
+        "Ocean Island",
+        "Ocean-Basin Flood",
+        "Oceanic Plateau",
+        "Rift Volcanics",
+        "Seamount"
+      ],
+      "matrix": [
+        [
+          36,
+          0,
+          2,
+          4,
+          3,
+          0,
+          0,
+          1,
+          1,
+          0
+        ],
+        [
+          0,
+          74,
+          0,
+          3,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          314,
+          2,
+          18,
+          1,
+          0,
+          7,
+          4,
+          0
+        ],
+        [
+          2,
+          1,
+          4,
+          1013,
+          17,
+          1,
+          0,
+          0,
+          9,
+          13
+        ],
+        [
+          1,
+          1,
+          17,
+          10,
+          887,
+          1,
+          0,
+          2,
+          3,
+          1
+        ],
+        [
+          1,
+          0,
+          3,
+          4,
+          7,
+          227,
+          0,
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          56,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0,
+          1,
+          0,
+          0,
+          19,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          4,
+          3,
+          0,
+          0,
+          0,
+          155,
+          2
+        ],
+        [
+          0,
+          0,
+          2,
+          10,
+          3,
+          5,
+          0,
+          0,
+          7,
+          321
+        ]
+      ],
+      "matrix_normalized": [
+        [
+          0.766,
+          0.0,
+          0.0426,
+          0.0851,
+          0.0638,
+          0.0,
+          0.0,
+          0.0213,
+          0.0213,
+          0.0
+        ],
+        [
+          0.0,
+          0.9487,
+          0.0,
+          0.0385,
+          0.0,
+          0.0128,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.9075,
+          0.0058,
+          0.052,
+          0.0029,
+          0.0,
+          0.0202,
+          0.0116,
+          0.0
+        ],
+        [
+          0.0019,
+          0.0009,
+          0.0038,
+          0.9557,
+          0.016,
+          0.0009,
+          0.0,
+          0.0,
+          0.0085,
+          0.0123
+        ],
+        [
+          0.0011,
+          0.0011,
+          0.0184,
+          0.0108,
+          0.961,
+          0.0011,
+          0.0,
+          0.0022,
+          0.0033,
+          0.0011
+        ],
+        [
+          0.0041,
+          0.0,
+          0.0122,
+          0.0163,
+          0.0285,
+          0.9228,
+          0.0,
+          0.0,
+          0.0,
+          0.0163
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0175,
+          0.0,
+          0.0,
+          0.9825,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.1923,
+          0.0,
+          0.0385,
+          0.0,
+          0.0,
+          0.7308,
+          0.0385,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.018,
+          0.024,
+          0.018,
+          0.0,
+          0.0,
+          0.0,
+          0.9281,
+          0.012
+        ],
+        [
+          0.0,
+          0.0,
+          0.0057,
+          0.0287,
+          0.0086,
+          0.0144,
+          0.0,
+          0.0,
+          0.0201,
+          0.9224
+        ]
+      ]
+    },
+    "per_class_metrics": [
+      {
+        "class": "Archean Craton",
+        "precision": 0.9,
+        "recall": 0.766,
+        "f1": 0.8276,
+        "support": 47
+      },
+      {
+        "class": "Complex Volcanic",
+        "precision": 0.9737,
+        "recall": 0.9487,
+        "f1": 0.961,
+        "support": 78
+      },
+      {
+        "class": "Cont. Flood Basalt",
+        "precision": 0.8971,
+        "recall": 0.9075,
+        "f1": 0.9023,
+        "support": 346
+      },
+      {
+        "class": "Convergent Margin",
+        "precision": 0.9638,
+        "recall": 0.9557,
+        "f1": 0.9597,
+        "support": 1060
+      },
+      {
+        "class": "Intraplate Volcanics",
+        "precision": 0.9446,
+        "recall": 0.961,
+        "f1": 0.9527,
+        "support": 923
+      },
+      {
+        "class": "Ocean Island",
+        "precision": 0.9619,
+        "recall": 0.9228,
+        "f1": 0.9419,
+        "support": 246
+      },
+      {
+        "class": "Ocean-Basin Flood",
+        "precision": 1.0,
+        "recall": 0.9825,
+        "f1": 0.9912,
+        "support": 57
+      },
+      {
+        "class": "Oceanic Plateau",
+        "precision": 0.6552,
+        "recall": 0.7308,
+        "f1": 0.6909,
+        "support": 26
+      },
+      {
+        "class": "Rift Volcanics",
+        "precision": 0.8611,
+        "recall": 0.9281,
+        "f1": 0.8934,
+        "support": 167
+      },
+      {
+        "class": "Seamount",
+        "precision": 0.9413,
+        "recall": 0.9224,
+        "f1": 0.9318,
+        "support": 348
+      }
+    ],
+    "n_samples": 3298,
+    "n_features": 50,
+    "n_classes": 10,
+    "classes_dropped": []
+  },
+  "basalt_excl_trace_major": {
+    "description": "Basalt (all crystal) + excl full-trace-missing, major 11 only",
+    "cv_scores": {
+      "accuracy": {
+        "mean": 0.5346,
+        "std": 0.0135,
+        "folds": [
+          0.55,
+          0.5152,
+          0.55,
+          0.5296,
+          0.5281
+        ]
+      },
+      "f1_macro": {
+        "mean": 0.5762,
+        "std": 0.0287,
+        "folds": [
+          0.5936,
+          0.5643,
+          0.5968,
+          0.6015,
+          0.525
+        ]
+      },
+      "f1_weighted": {
+        "mean": 0.6367,
+        "std": 0.0113,
+        "folds": [
+          0.6494,
+          0.6233,
+          0.6498,
+          0.6354,
+          0.6254
+        ]
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "Archean Craton",
+        "Complex Volcanic",
+        "Cont. Flood Basalt",
+        "Convergent Margin",
+        "Intraplate Volcanics",
+        "Ocean Island",
+        "Ocean-Basin Flood",
+        "Oceanic Plateau",
+        "Rift Volcanics",
+        "Seamount"
+      ],
+      "matrix": [
+        [
+          24,
+          17,
+          2,
+          2,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          74,
+          0,
+          2,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          116,
+          207,
+          8,
+          2,
+          5,
+          0,
+          1,
+          5,
+          2
+        ],
+        [
+          3,
+          364,
+          3,
+          665,
+          6,
+          3,
+          0,
+          1,
+          3,
+          12
+        ],
+        [
+          0,
+          404,
+          5,
+          14,
+          484,
+          4,
+          3,
+          1,
+          6,
+          2
+        ],
+        [
+          0,
+          177,
+          3,
+          1,
+          9,
+          54,
+          0,
+          0,
+          1,
+          1
+        ],
+        [
+          0,
+          2,
+          1,
+          0,
+          1,
+          0,
+          53,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          8,
+          0,
+          7,
+          0,
+          1,
+          0,
+          10,
+          0,
+          0
+        ],
+        [
+          0,
+          42,
+          4,
+          1,
+          5,
+          1,
+          0,
+          0,
+          114,
+          0
+        ],
+        [
+          0,
+          239,
+          1,
+          26,
+          1,
+          1,
+          0,
+          2,
+          0,
+          78
+        ]
+      ],
+      "matrix_normalized": [
+        [
+          0.5106,
+          0.3617,
+          0.0426,
+          0.0426,
+          0.0426,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.9487,
+          0.0,
+          0.0256,
+          0.0,
+          0.0256,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.3353,
+          0.5983,
+          0.0231,
+          0.0058,
+          0.0145,
+          0.0,
+          0.0029,
+          0.0145,
+          0.0058
+        ],
+        [
+          0.0028,
+          0.3434,
+          0.0028,
+          0.6274,
+          0.0057,
+          0.0028,
+          0.0,
+          0.0009,
+          0.0028,
+          0.0113
+        ],
+        [
+          0.0,
+          0.4377,
+          0.0054,
+          0.0152,
+          0.5244,
+          0.0043,
+          0.0033,
+          0.0011,
+          0.0065,
+          0.0022
+        ],
+        [
+          0.0,
+          0.7195,
+          0.0122,
+          0.0041,
+          0.0366,
+          0.2195,
+          0.0,
+          0.0,
+          0.0041,
+          0.0041
+        ],
+        [
+          0.0,
+          0.0351,
+          0.0175,
+          0.0,
+          0.0175,
+          0.0,
+          0.9298,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.3077,
+          0.0,
+          0.2692,
+          0.0,
+          0.0385,
+          0.0,
+          0.3846,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.2515,
+          0.024,
+          0.006,
+          0.0299,
+          0.006,
+          0.0,
+          0.0,
+          0.6826,
+          0.0
+        ],
+        [
+          0.0,
+          0.6868,
+          0.0029,
+          0.0747,
+          0.0029,
+          0.0029,
+          0.0,
+          0.0057,
+          0.0,
+          0.2241
+        ]
+      ]
+    },
+    "per_class_metrics": [
+      {
+        "class": "Archean Craton",
+        "precision": 0.8889,
+        "recall": 0.5106,
+        "f1": 0.6486,
+        "support": 47
+      },
+      {
+        "class": "Complex Volcanic",
+        "precision": 0.0513,
+        "recall": 0.9487,
+        "f1": 0.0973,
+        "support": 78
+      },
+      {
+        "class": "Cont. Flood Basalt",
+        "precision": 0.9159,
+        "recall": 0.5983,
+        "f1": 0.7238,
+        "support": 346
+      },
+      {
+        "class": "Convergent Margin",
+        "precision": 0.916,
+        "recall": 0.6274,
+        "f1": 0.7447,
+        "support": 1060
+      },
+      {
+        "class": "Intraplate Volcanics",
+        "precision": 0.949,
+        "recall": 0.5244,
+        "f1": 0.6755,
+        "support": 923
+      },
+      {
+        "class": "Ocean Island",
+        "precision": 0.7606,
+        "recall": 0.2195,
+        "f1": 0.3407,
+        "support": 246
+      },
+      {
+        "class": "Ocean-Basin Flood",
+        "precision": 0.9464,
+        "recall": 0.9298,
+        "f1": 0.9381,
+        "support": 57
+      },
+      {
+        "class": "Oceanic Plateau",
+        "precision": 0.6667,
+        "recall": 0.3846,
+        "f1": 0.4878,
+        "support": 26
+      },
+      {
+        "class": "Rift Volcanics",
+        "precision": 0.8837,
+        "recall": 0.6826,
+        "f1": 0.7703,
+        "support": 167
+      },
+      {
+        "class": "Seamount",
+        "precision": 0.8211,
+        "recall": 0.2241,
+        "f1": 0.3521,
+        "support": 348
+      }
+    ],
+    "n_samples": 3298,
+    "n_features": 11,
+    "n_classes": 10,
+    "classes_dropped": []
+  },
+  "basalt_pheno_excl_trace_all": {
+    "description": "Basalt phenocryst + excl full-trace-missing, all 50 features",
+    "cv_scores": {
+      "accuracy": {
+        "mean": 0.9489,
+        "std": 0.0057,
+        "folds": [
+          0.9554,
+          0.949,
+          0.9427,
+          0.9423,
+          0.9551
+        ]
+      },
+      "f1_macro": {
+        "mean": 0.9591,
+        "std": 0.0074,
+        "folds": [
+          0.9688,
+          0.9482,
+          0.9623,
+          0.9532,
+          0.9632
+        ]
+      },
+      "f1_weighted": {
+        "mean": 0.9493,
+        "std": 0.006,
+        "folds": [
+          0.9566,
+          0.9497,
+          0.9436,
+          0.9417,
+          0.9551
+        ]
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "Complex Volcanic",
+        "Cont. Flood Basalt",
+        "Convergent Margin",
+        "Intraplate Volcanics",
+        "Ocean Island",
+        "Oceanic Plateau",
+        "Rift Volcanics",
+        "Seamount"
+      ],
+      "matrix": [
+        [
+          44,
+          0,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          405,
+          1,
+          0,
+          0,
+          1,
+          17
+        ],
+        [
+          0,
+          0,
+          4,
+          52,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0,
+          4,
+          86,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          16,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          39,
+          0
+        ],
+        [
+          0,
+          0,
+          9,
+          0,
+          1,
+          0,
+          0,
+          96
+        ]
+      ],
+      "matrix_normalized": [
+        [
+          0.9565,
+          0.0,
+          0.0217,
+          0.0217,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.9552,
+          0.0024,
+          0.0,
+          0.0,
+          0.0024,
+          0.0401
+        ],
+        [
+          0.0,
+          0.0,
+          0.0702,
+          0.9123,
+          0.0,
+          0.0,
+          0.0,
+          0.0175
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0444,
+          0.9556,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0849,
+          0.0,
+          0.0094,
+          0.0,
+          0.0,
+          0.9057
+        ]
+      ]
+    },
+    "per_class_metrics": [
+      {
+        "class": "Complex Volcanic",
+        "precision": 1.0,
+        "recall": 0.9565,
+        "f1": 0.9778,
+        "support": 46
+      },
+      {
+        "class": "Cont. Flood Basalt",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5
+      },
+      {
+        "class": "Convergent Margin",
+        "precision": 0.9666,
+        "recall": 0.9552,
+        "f1": 0.9609,
+        "support": 424
+      },
+      {
+        "class": "Intraplate Volcanics",
+        "precision": 0.8966,
+        "recall": 0.9123,
+        "f1": 0.9043,
+        "support": 57
+      },
+      {
+        "class": "Ocean Island",
+        "precision": 0.9885,
+        "recall": 0.9556,
+        "f1": 0.9718,
+        "support": 90
+      },
+      {
+        "class": "Oceanic Plateau",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 16
+      },
+      {
+        "class": "Rift Volcanics",
+        "precision": 0.975,
+        "recall": 1.0,
+        "f1": 0.9873,
+        "support": 39
+      },
+      {
+        "class": "Seamount",
+        "precision": 0.8421,
+        "recall": 0.9057,
+        "f1": 0.8727,
+        "support": 106
+      }
+    ],
+    "n_samples": 783,
+    "n_features": 50,
+    "n_classes": 8,
+    "classes_dropped": []
+  },
+  "basalt_pheno_excl_trace_major": {
+    "description": "Basalt phenocryst + excl full-trace-missing, major 11 only",
+    "cv_scores": {
+      "accuracy": {
+        "mean": 0.7548,
+        "std": 0.017,
+        "folds": [
+          0.7452,
+          0.7707,
+          0.7261,
+          0.7692,
+          0.7628
+        ]
+      },
+      "f1_macro": {
+        "mean": 0.676,
+        "std": 0.0683,
+        "folds": [
+          0.6759,
+          0.6728,
+          0.5572,
+          0.7665,
+          0.7076
+        ]
+      },
+      "f1_weighted": {
+        "mean": 0.7551,
+        "std": 0.0147,
+        "folds": [
+          0.7506,
+          0.7638,
+          0.7315,
+          0.7759,
+          0.7538
+        ]
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "Complex Volcanic",
+        "Cont. Flood Basalt",
+        "Convergent Margin",
+        "Intraplate Volcanics",
+        "Ocean Island",
+        "Oceanic Plateau",
+        "Rift Volcanics",
+        "Seamount"
+      ],
+      "matrix": [
+        [
+          7,
+          0,
+          3,
+          0,
+          36,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          4,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          343,
+          6,
+          48,
+          3,
+          1,
+          22
+        ],
+        [
+          0,
+          2,
+          6,
+          30,
+          18,
+          0,
+          1,
+          0
+        ],
+        [
+          1,
+          1,
+          2,
+          2,
+          83,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0,
+          0,
+          14,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          9,
+          0,
+          29,
+          1
+        ],
+        [
+          0,
+          0,
+          22,
+          0,
+          3,
+          0,
+          0,
+          81
+        ]
+      ],
+      "matrix_normalized": [
+        [
+          0.1522,
+          0.0,
+          0.0652,
+          0.0,
+          0.7826,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.8,
+          0.2,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0024,
+          0.0,
+          0.809,
+          0.0142,
+          0.1132,
+          0.0071,
+          0.0024,
+          0.0519
+        ],
+        [
+          0.0,
+          0.0351,
+          0.1053,
+          0.5263,
+          0.3158,
+          0.0,
+          0.0175,
+          0.0
+        ],
+        [
+          0.0111,
+          0.0111,
+          0.0222,
+          0.0222,
+          0.9222,
+          0.0,
+          0.0111,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.125,
+          0.0,
+          0.0,
+          0.875,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.2308,
+          0.0,
+          0.7436,
+          0.0256
+        ],
+        [
+          0.0,
+          0.0,
+          0.2075,
+          0.0,
+          0.0283,
+          0.0,
+          0.0,
+          0.7642
+        ]
+      ]
+    },
+    "per_class_metrics": [
+      {
+        "class": "Complex Volcanic",
+        "precision": 0.7778,
+        "recall": 0.1522,
+        "f1": 0.2545,
+        "support": 46
+      },
+      {
+        "class": "Cont. Flood Basalt",
+        "precision": 0.5714,
+        "recall": 0.8,
+        "f1": 0.6667,
+        "support": 5
+      },
+      {
+        "class": "Convergent Margin",
+        "precision": 0.905,
+        "recall": 0.809,
+        "f1": 0.8543,
+        "support": 424
+      },
+      {
+        "class": "Intraplate Volcanics",
+        "precision": 0.7895,
+        "recall": 0.5263,
+        "f1": 0.6316,
+        "support": 57
+      },
+      {
+        "class": "Ocean Island",
+        "precision": 0.4213,
+        "recall": 0.9222,
+        "f1": 0.5784,
+        "support": 90
+      },
+      {
+        "class": "Oceanic Plateau",
+        "precision": 0.8235,
+        "recall": 0.875,
+        "f1": 0.8485,
+        "support": 16
+      },
+      {
+        "class": "Rift Volcanics",
+        "precision": 0.9062,
+        "recall": 0.7436,
+        "f1": 0.8169,
+        "support": 39
+      },
+      {
+        "class": "Seamount",
+        "precision": 0.7788,
+        "recall": 0.7642,
+        "f1": 0.7714,
+        "support": 106
+      }
+    ],
+    "n_samples": 783,
+    "n_features": 11,
+    "n_classes": 8,
+    "classes_dropped": []
+  }
+}
