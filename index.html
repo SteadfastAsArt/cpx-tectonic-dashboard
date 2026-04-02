@@ -882,6 +882,7 @@ table.journal tbody tr.model-row.model-highlight {
         <button class="active" data-mode="density">Density</button>
         <button data-mode="by-setting">By Setting</button>
         <button data-mode="cluster">Cluster</button>
+        <button data-mode="predictions">Predictions</button>
       </div>
       <div class="map-side-panel" id="map-panel">
         <div class="map-panel-top">
@@ -1465,27 +1466,27 @@ table.journal tbody tr.model-row.model-highlight {
     const modelGroups = [
       {
         label: 'A. Full Dataset',
-        desc: 'All rock types, all crystal types, varying imputation strategies',
+        desc: 'All 211K rows, all rock types and crystal types',
         color: '#6c757d',
-        keys: ['baseline', 'native_nan', 'hierarchical'],
+        keys: ['baseline', 'native_nan', 'full_dataset_cv', 'hierarchical'],
       },
       {
         label: 'B. Data Quality Subsets',
-        desc: 'All rock types, filtered by feature completeness',
+        desc: 'Filtered by feature completeness — isolating trace element contribution',
         color: '#2563eb',
-        keys: ['subset_M1', 'subset_M2T0', 'excl_trace_missing'],
+        keys: ['subset_M1', 'm1_all_features', 'subset_M2T0', 'excl_trace_missing', 'excl_trace_major_only'],
       },
       {
         label: 'C. Basalt Subset',
-        desc: 'ROCK NAME contains "BASALT" (46,530 rows, 22% of dataset)',
+        desc: 'ROCK NAME contains "BASALT" — 46,530 rows (22% of dataset), all crystal types',
         color: '#d97706',
         keys: ['basalt_all', 'basalt_major'],
       },
       {
         label: 'D. Basalt + Phenocryst',
-        desc: 'Basaltic rock + phenocryst/microphenocryst CPX (9,653 rows)',
+        desc: 'Basaltic rock + phenocryst/microphenocryst CPX only',
         color: '#7c3aed',
-        keys: ['basalt_phenocryst_all', 'basalt_phenocryst_major'],
+        keys: ['basalt_phenocryst_all', 'basalt_phenocryst_major', 'basalt_pheno_excl_trace'],
       },
     ];
 
@@ -2385,6 +2386,10 @@ table.journal tbody tr.model-row.model-highlight {
   let mapTotalCount = 0;
   const mapCounts = {};
 
+  // Prediction layer data & groups
+  let predictionData = null;
+  let predictionLayer = L.layerGroup();
+
   // Cluster layer uses the 20K detailed samples from viz_data.json
   const samples = D.samples || [];
   const clusterGroup = L.markerClusterGroup({
@@ -2439,7 +2444,7 @@ table.journal tbody tr.model-row.model-highlight {
       renderLegend('');
       document.getElementById('cap-fig19').innerHTML =
         '<strong>Figure 19.</strong> Global distribution of ' + fmtNum(mapTotalCount) +
-        ' clinopyroxene analyses. Density view shows sample concentration; By Setting view colors all points by tectonic environment (canvas-rendered for performance); Cluster view aggregates 20K representative samples with interactive popups.';
+        ' clinopyroxene analyses. Density view shows sample concentration; By Setting view colors all points by tectonic environment (canvas-rendered for performance); Cluster view aggregates 20K representative samples with interactive popups; Predictions view overlays model classification results with errors highlighted in red.';
     })
     .catch(() => {
       // Fallback to viz_data samples
@@ -2456,6 +2461,70 @@ table.journal tbody tr.model-row.model-highlight {
       });
       renderLegend('');
     });
+
+  // Load prediction map data asynchronously
+  fetch('data/prediction_map.json')
+    .then(r => r.json())
+    .then(pred => {
+      predictionData = pred;
+      const classLabels = pred.class_labels;
+      const renderer = L.canvas({ padding: 0.5 });
+
+      // Separate correct and incorrect predictions
+      const correct = [];
+      const incorrect = [];
+      pred.predictions.forEach(p => {
+        if (p[4] === 1) correct.push(p);
+        else incorrect.push(p);
+      });
+
+      // Render correct predictions first (subtle green background)
+      correct.forEach(p => {
+        const m = L.circleMarker([p[0], p[1]], {
+          radius: 3,
+          fillColor: '#22c55e',
+          color: '#22c55e',
+          weight: 0,
+          fillOpacity: 0.3,
+          renderer: renderer,
+        });
+        predictionLayer.addLayer(m);
+      });
+
+      // Render incorrect predictions on top (prominent red markers with popups)
+      incorrect.forEach(p => {
+        const m = L.circleMarker([p[0], p[1]], {
+          radius: 6,
+          fillColor: '#ef4444',
+          color: '#ffffff',
+          weight: 1.5,
+          fillOpacity: 0.85,
+          renderer: renderer,
+        });
+        m.bindPopup(buildPredPopup(p, classLabels));
+        predictionLayer.addLayer(m);
+      });
+    })
+    .catch(err => {
+      console.warn('Could not load prediction_map.json:', err);
+    });
+
+  function buildPredPopup(p, classLabels) {
+    const trueClass = classLabels[p[2]];
+    const predClass = classLabels[p[3]];
+    const confidence = (p[5] * 100).toFixed(1);
+    const loc = p[6] || '';
+    const rock = p[7] || '';
+    let html = `<div style="font-family:Inter,sans-serif;font-size:12px;max-width:240px;">`;
+    html += `<div style="color:#ef4444;font-weight:600;margin-bottom:4px;">Misclassified</div>`;
+    html += `<div>True: <strong>${trueClass}</strong></div>`;
+    html += `<div>Predicted: <strong>${predClass}</strong></div>`;
+    html += `<div style="color:#6c757d;margin-top:4px;">Confidence: ${confidence}%</div>`;
+    if (loc) html += `<div style="color:#6c757d;font-size:11px;margin-top:4px;">${loc}</div>`;
+    if (rock) html += `<div style="color:#6c757d;font-size:11px;font-style:italic;">${rock}</div>`;
+    html += `</div>`;
+    return html;
+  }
 
   function buildPopup(s) {
     const sn = shortName(s.ts);
@@ -2484,11 +2553,13 @@ table.journal tbody tr.model-row.model-highlight {
     if (currentMode === 'density' && heatLayer) map.removeLayer(heatLayer);
     else if (currentMode === 'by-setting') map.removeLayer(settingLayers);
     else if (currentMode === 'cluster') map.removeLayer(clusterGroup);
+    else if (currentMode === 'predictions') map.removeLayer(predictionLayer);
   }
   function addLayer(mode) {
     if (mode === 'density' && heatLayer) heatLayer.addTo(map);
     else if (mode === 'by-setting') settingLayers.addTo(map);
     else if (mode === 'cluster') clusterGroup.addTo(map);
+    else if (mode === 'predictions') predictionLayer.addTo(map);
   }
 
   const mapControls = document.getElementById('map-controls');
@@ -2501,10 +2572,86 @@ table.journal tbody tr.model-row.model-highlight {
     addLayer(mode);
     currentMode = mode;
     mapControls.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+
+    // Update side panel for predictions mode vs normal modes
+    if (mode === 'predictions') {
+      renderPredictionPanel();
+    } else {
+      restoreDefaultPanel();
+    }
   });
 
   // Side panel
   document.getElementById('map-total').textContent = '...';
+
+  function renderPredictionPanel() {
+    if (!predictionData) return;
+    const s = predictionData.summary;
+    const correctPct = (s.accuracy * 100).toFixed(1);
+
+    // Update top stats
+    document.getElementById('map-total').textContent = fmtNum(s.total);
+    document.querySelector('#map-panel .stat-label').textContent = 'model predictions';
+
+    // Update legend title
+    document.querySelector('.map-legend-title').textContent = 'Per-Class Accuracy';
+
+    // Build prediction summary + per-class accuracy legend
+    const legendDiv = document.getElementById('map-legend');
+    let html = '';
+
+    // Summary stats block
+    html += `<div style="padding:4px 8px 12px;border-bottom:1px solid var(--border);margin-bottom:8px;">`;
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 0;">`;
+    html += `<span style="color:var(--text-secondary);">Correct</span>`;
+    html += `<span style="font-family:var(--font-mono);font-size:12px;color:#22c55e;font-weight:600;">${fmtNum(s.correct)} (${correctPct}%)</span>`;
+    html += `</div>`;
+    html += `<div style="display:flex;justify-content:space-between;padding:3px 0;">`;
+    html += `<span style="color:var(--text-secondary);">Errors</span>`;
+    html += `<span style="font-family:var(--font-mono);font-size:12px;color:#ef4444;font-weight:600;">${fmtNum(s.incorrect)}</span>`;
+    html += `</div>`;
+    html += `</div>`;
+
+    // Per-class accuracy rows sorted by accuracy descending
+    const perClass = Object.entries(s.per_class_accuracy)
+      .sort((a, b) => b[1].accuracy - a[1].accuracy);
+
+    perClass.forEach(([className, data]) => {
+      const acc = (data.accuracy * 100).toFixed(1);
+      const barW = (data.accuracy * 100).toFixed(1);
+      // Green-to-red gradient: high accuracy = green, low = red
+      const t = data.accuracy;
+      const r = Math.round(239 * (1 - t) + 34 * t);
+      const g = Math.round(68 * (1 - t) + 197 * t);
+      const b = Math.round(68 * (1 - t) + 94 * t);
+      const barColor = `rgb(${r},${g},${b})`;
+
+      html += `<div class="legend-row">
+        <div class="legend-info" style="flex:1;">
+          <div class="legend-name" title="${className}">${className}</div>
+          <div class="legend-bar-wrap"><div class="legend-bar-fill" style="width:${barW}%;background:${barColor};opacity:0.8;"></div></div>
+        </div>
+        <div>
+          <div class="legend-count">${acc}%</div>
+          <div class="legend-pct">${fmtNum(data.correct)}/${fmtNum(data.total)}</div>
+        </div>
+      </div>`;
+    });
+
+    legendDiv.innerHTML = html;
+  }
+
+  function restoreDefaultPanel() {
+    // Restore top stats
+    document.getElementById('map-total').textContent = fmtNum(mapTotalCount);
+    document.querySelector('#map-panel .stat-label').textContent = 'mapped analyses';
+
+    // Restore legend title
+    document.querySelector('.map-legend-title').textContent = 'Tectonic Settings';
+
+    // Re-render the default legend
+    renderLegend(document.getElementById('map-search').value || '');
+  }
 
   function renderLegend(filter) {
     const legendDiv = document.getElementById('map-legend');
@@ -2539,7 +2686,7 @@ table.journal tbody tr.model-row.model-highlight {
   });
 
   document.getElementById('cap-fig19').innerHTML =
-    `<strong>Figure 19.</strong> Global distribution of 211,773 clinopyroxene analyses colored by tectonic setting. Toggle between density heatmap, by-setting, and clustered point views.`;
+    `<strong>Figure 19.</strong> Global distribution of 211,773 clinopyroxene analyses colored by tectonic setting. Toggle between density heatmap, by-setting, clustered point, and model prediction views.`;
 
   // Invalidate map size after layout settles
   setTimeout(() => { map.invalidateSize(); }, 200);
