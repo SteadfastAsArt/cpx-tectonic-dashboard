@@ -1,0 +1,91 @@
+{
+  "experiment": "basalt_phenocryst",
+  "description": "Basaltic rock + CPX phenocryst/microphenocryst",
+  "n_total": 9653,
+  "n_classes": 10,
+  "classes_dropped": [
+    "Archean Craton"
+  ],
+  "crystal_types": {
+    "phenocryst": 8861,
+    "microphenocryst": 793
+  },
+  "all_features": {
+    "cv_scores": {
+      "accuracy": {
+        "mean": 0.8293,
+        "std": 0.0132,
+        "folds": [
+          0.8509,
+          0.8156,
+          0.8353,
+          0.8161,
+          0.8285
+        ]
+      },
+      "f1_macro": {
+        "mean": 0.7337,
+        "std": 0.0226,
+        "folds": [
+          0.7517,
+          0.6924,
+          0.7429,
+          0.7276,
+          0.7537
+        ]
+      },
+      "f1_weighted": {
+        "mean": 0.8332,
+        "std": 0.011,
+        "folds": [
+          0.8488,
+          0.8222,
+          0.8411,
+          0.82,
+          0.8338
+        ]
+      }
+    },
+    "n_samples": 9653,
+    "n_features": 50
+  },
+  "major_only": {
+    "cv_scores": {
+      "accuracy": {
+        "mean": 0.7749,
+        "std": 0.0072,
+        "folds": [
+          0.783,
+          0.7701,
+          0.7815,
+          0.7637,
+          0.7762
+        ]
+      },
+      "f1_macro": {
+        "mean": 0.6212,
+        "std": 0.0264,
+        "folds": [
+          0.6414,
+          0.5723,
+          0.6175,
+          0.6292,
+          0.6457
+        ]
+      },
+      "f1_weighted": {
+        "mean": 0.7829,
+        "std": 0.0068,
+        "folds": [
+          0.789,
+          0.7787,
+          0.7899,
+          0.7718,
+          0.785
+        ]
+      }
+    },
+    "n_samples": 9653,
+    "n_features": 11
+  }
+}

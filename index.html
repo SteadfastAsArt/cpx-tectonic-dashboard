@@ -210,6 +210,49 @@ table.journal tbody tr.model-highlight {
   border-left: 3px solid var(--success);
 }
 
+/* Model group header rows */
+table.journal tbody tr.group-header td {
+  background: #f8f9fa;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 12px;
+  line-height: 1.4;
+}
+table.journal tbody tr.group-header td .group-label {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-heading);
+}
+table.journal tbody tr.group-header td .group-desc {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  margin-top: 1px;
+}
+table.journal tbody tr.group-header + tr td {
+  border-top: none;
+}
+/* Override alternating row color within groups */
+table.journal tbody tr.model-row td {
+  background: var(--bg);
+}
+table.journal tbody tr.model-row:nth-child(even) td {
+  background: var(--bg);
+}
+table.journal tbody tr.model-row.model-highlight td {
+  background: #f0fdf4;
+}
+table.journal tbody tr.model-row.model-highlight {
+  border-left: 3px solid var(--success);
+}
+/* Star prefix styling */
+.star-prefix {
+  color: #d97706;
+  font-size: 14px;
+  margin-right: 2px;
+}
+
 /* =================================================================
    FIGURE CAPTIONS
    ================================================================= */
@@ -694,18 +737,18 @@ table.journal tbody tr.model-highlight {
   <div class="container">
     <h2 class="section-title">Model Comparison</h2>
 
-    <p class="table-caption"><strong>Table 2.</strong> Performance comparison across eight modeling strategies. All models use XGBoost with Bayesian hyperparameter tuning. Models marked with &pm; show 5-fold CV standard deviation.</p>
+    <p class="table-caption"><strong>Table 2.</strong> Classification performance across 10 experiments grouped by data subset. All models use XGBoost with Bayesian hyperparameter tuning. Models with &pm; report 5-fold cross-validation mean and standard deviation.</p>
     <div class="table-wrap">
       <table class="journal" id="model-table">
         <thead>
           <tr>
             <th>Strategy</th>
-            <th>Algorithm</th>
-            <th style="text-align:right">Features</th>
-            <th style="text-align:right">Training Rows</th>
+            <th style="text-align:right">Rows</th>
+            <th style="text-align:right">Feat</th>
+            <th style="text-align:right">Classes</th>
             <th style="text-align:right">Accuracy</th>
             <th style="text-align:right">F1-macro</th>
-            <th style="text-align:right">F1-weighted</th>
+            <th style="text-align:right">Validation</th>
           </tr>
         </thead>
         <tbody id="model-tbody"></tbody>
@@ -714,19 +757,19 @@ table.journal tbody tr.model-highlight {
 
     <!-- Figure 10 -->
     <div style="margin-top:28px;">
-      <div id="fig-model-compare" style="width:100%;height:400px;"></div>
-      <p class="fig-caption"><strong>Figure 10.</strong> Accuracy and macro-averaged F1 score across all eight modeling strategies. The excl_trace_missing strategy (F1m = 0.909) offers the best practical trade-off between performance and sample size, while M2_T0 achieves 97.2% on a small complete-trace subset.</p>
+      <div id="fig-model-compare" style="width:100%;height:440px;"></div>
+      <p class="fig-caption"><strong>Figure 10.</strong> Accuracy and macro-averaged F1 score across all 10 experiments, grouped by data subset. Error bars show &pm;1 standard deviation from 5-fold CV where applicable. The excl_trace_missing strategy (F1m = 0.909) offers the best practical trade-off between performance and sample size.</p>
     </div>
 
     <!-- Key Findings -->
     <div class="findings">
       <h4>Key Findings</h4>
       <ul>
-        <li><strong>Excl. Full-Trace-Missing achieves F1-macro = 0.909 &pm; 0.005</strong> on 39,631 samples by excluding rows with no trace data at all, making it the best practical model for real-world deployment with cross-validated reliability.</li>
-        <li><strong>M2_T0 achieves 97.2% F1-macro</strong> using complete trace element data, but only 1,195 samples are available &mdash; suggesting trace elements contain strong discriminative signal when present.</li>
-        <li><strong>K<sub>2</sub>O is the strongest discriminator</strong> (CV = 1.753), substantially exceeding traditionally emphasized oxides like TiO<sub>2</sub> and Cr<sub>2</sub>O<sub>3</sub>.</li>
-        <li><strong>Basalt-only classification drops to F1-macro = 0.717</strong>, confirming that rock type diversity carries significant tectonic signal.</li>
-        <li><strong>409.8:1 class imbalance</strong> between Intraplate Volcanics and Ocean-Basin Flood Basalt requires careful sample weighting or resampling strategies.</li>
+        <li><strong>10 experiments across 4 data subsets</strong> systematically evaluate how data scope, feature completeness, rock type filtering, and crystal type selection affect classification performance.</li>
+        <li><strong>Best practical model: Excl. trace-missing achieves F1-macro = 0.909 &pm; 0.005</strong> on 39,631 samples by excluding rows with no trace data at all, verified by 5-fold cross-validation for reliable deployment.</li>
+        <li><strong>Basalt phenocryst target subset: F1-macro = 0.734 &pm; 0.023</strong> on 9,653 samples. Trace elements improve basalt phenocryst classification from 0.621 to 0.734 (+11.3 percentage points), confirming their discriminative value even in this restricted subset.</li>
+        <li><strong>M2_T0 achieves 97.2% F1-macro</strong> using complete trace element data, but only 1,195 samples are available &mdash; demonstrating strong discriminative signal in trace elements when present.</li>
+        <li><strong>409.8:1 class imbalance</strong> between Intraplate Volcanics and Ocean-Basin Flood Basalt requires careful sample weighting or resampling strategies across all subsets.</li>
       </ul>
     </div>
   </div>
@@ -1416,89 +1459,206 @@ table.journal tbody tr.model-highlight {
   }
 
   /* ---------------------------------------------------------------
-     TABLE 2: Model performance (all 8 models)
+     TABLE 2: Model performance (all 10 models, grouped by subset)
      --------------------------------------------------------------- */
   {
-    const modelOrder = ['baseline', 'native_nan', 'subset_M1', 'subset_M2T0', 'hierarchical', 'excl_trace_missing', 'basalt_all', 'basalt_major'];
-    const bestF1 = Math.max(...modelOrder.map(k => D.models[k].f1m));
+    const modelGroups = [
+      {
+        label: 'A. Full Dataset',
+        desc: 'All rock types, all crystal types, varying imputation strategies',
+        color: '#6c757d',
+        keys: ['baseline', 'native_nan', 'hierarchical'],
+      },
+      {
+        label: 'B. Data Quality Subsets',
+        desc: 'All rock types, filtered by feature completeness',
+        color: '#2563eb',
+        keys: ['subset_M1', 'subset_M2T0', 'excl_trace_missing'],
+      },
+      {
+        label: 'C. Basalt Subset',
+        desc: 'ROCK NAME contains "BASALT" (46,530 rows, 22% of dataset)',
+        color: '#d97706',
+        keys: ['basalt_all', 'basalt_major'],
+      },
+      {
+        label: 'D. Basalt + Phenocryst',
+        desc: 'Basaltic rock + phenocryst/microphenocryst CPX (9,653 rows)',
+        color: '#7c3aed',
+        keys: ['basalt_phenocryst_all', 'basalt_phenocryst_major'],
+      },
+    ];
+
     const bestPracticalKey = 'excl_trace_missing';
     const tbody = document.getElementById('model-tbody');
+    let html = '';
 
-    tbody.innerHTML = modelOrder.map(key => {
-      const m = D.models[key];
-      const isHighlight = key === bestPracticalKey;
-      const isBestF1 = m.f1m === bestF1;
-      const f1Class = isBestF1 ? 'num bold' : 'num';
-      const rowClass = isHighlight ? ' class="model-highlight"' : '';
-
-      // Format metrics with +/- std for cv_verified models
-      const fmtMetric = (val, stdKey) => {
-        const std = m[stdKey];
-        if (m.cv_verified && std != null) {
-          return val.toFixed(4) + ' <span style="font-size:10px;color:var(--text-secondary);">&pm; ' + std.toFixed(4) + '</span>';
-        }
-        return val.toFixed(4);
-      };
-
-      const accText = fmtMetric(m.acc, 'acc_std');
-      const f1mRaw = fmtMetric(m.f1m, 'f1m_std');
-      const f1mText = isBestF1 ? `<strong>${f1mRaw}</strong>` : f1mRaw;
-      const f1wText = m.f1w ? fmtMetric(m.f1w, 'f1w_std') : '&mdash;';
-
-      return `<tr${rowClass}>
-        <td>${m.name}${isHighlight ? ' <span style="color:var(--success);font-size:11px;font-weight:600;">(best practical)</span>' : ''}</td>
-        <td>${m.algorithm}</td>
-        <td class="num">${m.features}</td>
-        <td class="num">${fmtNum(m.rows)}</td>
-        <td class="num">${accText}</td>
-        <td class="${f1Class}">${f1mText}</td>
-        <td class="num">${f1wText}</td>
+    for (const group of modelGroups) {
+      // Group header row
+      html += `<tr class="group-header">
+        <td colspan="7" style="border-left: 4px solid ${group.color};">
+          <span class="group-label" style="color: ${group.color};">${group.label}</span>
+          <span class="group-desc">${group.desc}</span>
+        </td>
       </tr>`;
-    }).join('');
+
+      // Data rows for each model in the group
+      for (const key of group.keys) {
+        const m = D.models[key];
+        if (!m) continue;
+        const isHighlight = key === bestPracticalKey;
+        const isCv = m.cv_verified && m.f1m_std != null;
+        const validation = isCv ? '5-fold CV' : '80/20 split';
+
+        // Format metrics: mean +/- std for CV models, plain value otherwise
+        const fmtMetric = (val, stdKey) => {
+          const std = m[stdKey];
+          if (isCv && std != null) {
+            return val.toFixed(3) + '<span style="font-size:10px;color:var(--text-secondary);">&thinsp;&pm;&thinsp;' + std.toFixed(3) + '</span>';
+          }
+          return val.toFixed(4);
+        };
+
+        const accText = fmtMetric(m.acc, 'acc_std');
+        const f1mRaw = fmtMetric(m.f1m, 'f1m_std');
+        const f1mText = isHighlight ? `<strong>${f1mRaw}</strong>` : f1mRaw;
+
+        const namePrefix = isHighlight ? '<span class="star-prefix">&#9733;</span>' : '';
+        const nameSuffix = isHighlight ? ' <span style="color:var(--success);font-size:10px;font-weight:600;">(best practical)</span>' : '';
+
+        const rowClass = isHighlight ? 'model-row model-highlight' : 'model-row';
+
+        html += `<tr class="${rowClass}">
+          <td style="border-left: 4px solid ${group.color}; padding-left: 16px;">${namePrefix}${m.name}${nameSuffix}</td>
+          <td class="num">${fmtNum(m.rows)}</td>
+          <td class="num">${m.features}</td>
+          <td class="num">${m.n_classes || 11}</td>
+          <td class="num">${accText}</td>
+          <td class="num">${f1mText}</td>
+          <td style="text-align:right;font-size:11px;color:var(--text-secondary);">${validation}</td>
+        </tr>`;
+      }
+    }
+
+    tbody.innerHTML = html;
   }
 
   /* ---------------------------------------------------------------
-     FIGURE 10: Model comparison chart (all 8 models)
+     FIGURE 10: Model comparison chart (all 10 models, grouped)
      --------------------------------------------------------------- */
   {
-    const modelOrder = ['baseline', 'native_nan', 'subset_M1', 'subset_M2T0', 'hierarchical', 'excl_trace_missing', 'basalt_all', 'basalt_major'];
-    const names = modelOrder.map(k => {
-      const n = D.models[k].name.replace(/ \(.*?\)/, '');
-      // Wrap long names
-      return n.length > 18 ? n.replace(/ /g, '<br>') : n;
+    const chartGroups = [
+      { color: '#6c757d', accent: '#495057', keys: ['baseline', 'native_nan', 'hierarchical'] },
+      { color: '#2563eb', accent: '#1d4ed8', keys: ['subset_M1', 'subset_M2T0', 'excl_trace_missing'] },
+      { color: '#d97706', accent: '#b45309', keys: ['basalt_all', 'basalt_major'] },
+      { color: '#7c3aed', accent: '#6d28d9', keys: ['basalt_phenocryst_all', 'basalt_phenocryst_major'] },
+    ];
+
+    // Build arrays with gaps between groups
+    const names = [];
+    const accs = [];
+    const f1ms = [];
+    const accErrors = [];
+    const f1mErrors = [];
+    const accBarColors = [];
+    const f1mBarColors = [];
+    const bestKey = 'excl_trace_missing';
+
+    // Use spacer entries with unique invisible names to create group gaps
+    let spacerIdx = 0;
+    chartGroups.forEach((group, gi) => {
+      if (gi > 0) {
+        // Unique invisible spacer (zero-width spaces for uniqueness)
+        const spacerName = '\u200B'.repeat(++spacerIdx);
+        names.push(spacerName);
+        accs.push(null);
+        f1ms.push(null);
+        accErrors.push(0);
+        f1mErrors.push(0);
+        accBarColors.push('rgba(0,0,0,0)');
+        f1mBarColors.push('rgba(0,0,0,0)');
+      }
+      group.keys.forEach(key => {
+        const m = D.models[key];
+        if (!m) return;
+        const shortName = m.name.replace(/ \(.*?\)/, '');
+        names.push(shortName.length > 20 ? shortName.replace(/ /g, '<br>') : shortName);
+        accs.push(m.acc);
+        f1ms.push(m.f1m);
+        accErrors.push(m.cv_verified && m.acc_std ? m.acc_std : 0);
+        f1mErrors.push(m.cv_verified && m.f1m_std ? m.f1m_std : 0);
+        accBarColors.push(key === bestKey ? '#047857' : group.accent);
+        f1mBarColors.push(key === bestKey ? '#059669' : group.color);
+      });
     });
-    const accs = modelOrder.map(k => D.models[k].acc);
-    const f1ms = modelOrder.map(k => D.models[k].f1m);
-    const barColors = modelOrder.map(k => k === 'excl_trace_missing' ? '#059669' : '#2980b9');
-    const accColors = modelOrder.map(k => k === 'excl_trace_missing' ? '#047857' : '#1a5276');
+
+    // Build group label annotations positioned below the x-axis
+    const groupLabels = ['A', 'B', 'C', 'D'];
+    const groupColors = ['#6c757d', '#2563eb', '#d97706', '#7c3aed'];
+    const groupSizes = [3, 3, 2, 2]; // models per group
+    const annotations = [];
+    let pos = 0;
+    for (let gi = 0; gi < chartGroups.length; gi++) {
+      const midIdx = pos + (groupSizes[gi] - 1) / 2;
+      // Account for spacer gaps (one spacer between each group after the first)
+      const xPos = midIdx + gi; // shift by number of spacers before this group
+      annotations.push({
+        x: names[Math.round(xPos)] || '',
+        y: -0.18,
+        xref: 'x',
+        yref: 'paper',
+        text: `<b>Group ${groupLabels[gi]}</b>`,
+        showarrow: false,
+        font: { size: 9, color: groupColors[gi] },
+        xanchor: 'center',
+      });
+      pos += groupSizes[gi];
+    }
 
     Plotly.newPlot('fig-model-compare', [
       {
         type: 'bar',
         name: 'Accuracy',
         x: names, y: accs,
-        marker: { color: accColors },
-        text: accs.map(v => v.toFixed(3)),
+        marker: { color: accBarColors },
+        error_y: {
+          type: 'data',
+          array: accErrors,
+          visible: true,
+          thickness: 1.5,
+          width: 3,
+          color: '#333',
+        },
+        text: accs.map(v => v != null ? v.toFixed(3) : ''),
         textposition: 'outside',
-        textfont: { family: 'JetBrains Mono', size: 9 },
+        textfont: { family: 'JetBrains Mono', size: 8 },
         hovertemplate: '%{x}: Acc = %{y:.4f}<extra></extra>',
       },
       {
         type: 'bar',
         name: 'F1-macro',
         x: names, y: f1ms,
-        marker: { color: barColors },
-        text: f1ms.map(v => v.toFixed(3)),
+        marker: { color: f1mBarColors },
+        error_y: {
+          type: 'data',
+          array: f1mErrors,
+          visible: true,
+          thickness: 1.5,
+          width: 3,
+          color: '#333',
+        },
+        text: f1ms.map(v => v != null ? v.toFixed(3) : ''),
         textposition: 'outside',
-        textfont: { family: 'JetBrains Mono', size: 9 },
+        textfont: { family: 'JetBrains Mono', size: 8 },
         hovertemplate: '%{x}: F1m = %{y:.4f}<extra></extra>',
       }
     ], plotlyLayout({
       barmode: 'group',
-      yaxis: { title: 'Score', range: [0.55, 1.05], gridcolor: '#eee', zeroline: false },
-      xaxis: { tickfont: { size: 10 }, tickangle: -30 },
+      yaxis: { title: 'Score', range: [0.5, 1.08], gridcolor: '#eee', zeroline: false },
+      xaxis: { tickfont: { size: 9 }, tickangle: -35 },
       legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: 1.08, font: { size: 12 } },
-      margin: { l: 55, r: 20, t: 50, b: 120 },
+      margin: { l: 55, r: 20, t: 50, b: 140 },
+      annotations: annotations,
     }), PLOTLY_CONFIG);
   }
 
