@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clinopyroxene Tectonic Setting Classification · Review Navigator</title>
+<style>
+  :root {
+    --navy: #1a2744;
+    --blue: #2563eb;
+    --green: #059669;
+    --orange: #d97706;
+    --purple: #7c3aed;
+    --bg: #f8fafc;
+    --white: #ffffff;
+    --gray: #64748b;
+    --ink: #1e293b;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
+                 "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 1240px; margin: 0 auto; padding: 48px 32px; }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(180deg, var(--white) 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .kicker {
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  h1.title {
+    font-size: 42px;
+    line-height: 1.15;
+    color: var(--navy);
+    margin: 0 0 14px 0;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    color: var(--blue);
+    font-size: 18px;
+    margin: 0 0 36px 0;
+    font-weight: 500;
+  }
+
+  /* Stat grid */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-top: 16px;
+  }
+  .stat {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--navy);
+    border-radius: 8px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .stat .value {
+    display: block;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .stat .label {
+    display: block;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+
+  /* Cards grid */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 16px;
+  }
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  }
+  .card .accent {
+    height: 4px;
+    background: var(--navy);
+  }
+  .card .thumb {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .card .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .thumb-gradient {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--white);
+    padding: 18px;
+    background: linear-gradient(135deg, var(--navy) 0%, #2a3a5f 55%, var(--blue) 100%);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.01em;
+  }
+  .thumb-gradient .eq {
+    font-family: "Cambria Math", "STIX Two Math", Georgia, serif;
+    font-style: italic;
+    font-size: 22px;
+  }
+  .thumb-gradient .arrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 19px;
+    letter-spacing: 0.02em;
+  }
+  .thumb-gradient .small {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+    opacity: 0.95;
+  }
+  .card .body {
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+  }
+  .card h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.005em;
+  }
+  .card .lead {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .card li {
+    font-size: 13.5px;
+    line-height: 1.5;
+    padding-left: 14px;
+    position: relative;
+    color: var(--ink);
+  }
+  .card li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--blue);
+  }
+  .card li code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    background: var(--bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--navy);
+  }
+  .card li .desc { color: var(--gray); }
+
+  .warn {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-left: 4px solid var(--orange);
+    border-radius: 6px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: #7c2d12;
+    line-height: 1.55;
+  }
+  .warn strong { color: var(--orange); }
+
+  /* Section heading */
+  .section-head {
+    margin: 56px 0 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .section-head h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--navy);
+    margin: 0;
+    font-weight: 700;
+  }
+  .section-head .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 64px;
+    padding: 36px 0 56px;
+    border-top: 1px solid var(--border);
+    background: var(--white);
+  }
+  footer .container { padding-top: 36px; padding-bottom: 0; }
+  footer h4 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--navy);
+    margin: 0 0 18px;
+    font-weight: 700;
+  }
+  .core-links {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .core-link {
+    display: block;
+    padding: 16px 18px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--ink);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .core-link:hover {
+    border-color: var(--blue);
+    background: var(--white);
+    text-decoration: none;
+  }
+  .core-link .name {
+    display: block;
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .core-link .tag {
+    display: block;
+    font-size: 12px;
+    color: var(--gray);
+  }
+  .meta {
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--gray);
+    letter-spacing: 0.02em;
+  }
+  .meta code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: var(--bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .core-links { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .container { padding: 32px 20px; }
+    h1.title { font-size: 32px; }
+    .cards { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr; }
+    .core-links { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="kicker">CPX Tectonic Classification</div>
+    <h1 class="title">Clinopyroxene Tectonic Setting Classification</h1>
+    <p class="subtitle">Project review navigator · 项目审视导航</p>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="value">211,773</span>
+        <span class="label">Total samples</span>
+      </div>
+      <div class="stat">
+        <span class="value">39,631</span>
+        <span class="label">Modeling subset</span>
+      </div>
+      <div class="stat">
+        <span class="value">11</span>
+        <span class="label">Tectonic settings</span>
+      </div>
+      <div class="stat">
+        <span class="value">0.909 ± 0.005</span>
+        <span class="label">Best 5-fold F1-macro</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="section-head">
+    <h3>Five Review Paths · 五段审视路径</h3>
+    <div class="rule"></div>
+  </div>
+
+  <div class="cards">
+
+    <!-- Card 1 -->
+    <article class="card">
+      <div class="accent"></div>
+      <div class="thumb">
+        <img src="reports/boxplot_majors.png" alt="Major oxide boxplots by class">
+      </div>
+      <div class="body">
+        <h2>段 1 · 原数据元数据分布</h2>
+        <p class="lead">11 类构造背景、451 列原始数据、数据清洗与特征判别力分析的起点。</p>
+        <ul>
+          <li><a href="REVIEW.md#1-原数据的元数据分布">REVIEW.md</a> <span class="desc">— 第 1 节叙事</span></li>
+          <li><a href="reports/boxplot_majors.png">reports/boxplot_majors.png</a> <span class="desc">— 主元素箱线图</span></li>
+          <li><a href="reports/boxplot_traces.png">reports/boxplot_traces.png</a> <span class="desc">— 微量元素箱线图</span></li>
+          <li><code>01_clean_data.py</code> <span class="desc">— 清洗脚本</span></li>
+          <li><code>17_class_feature_boxplot.py</code> <span class="desc">— 箱线图脚本</span></li>
+          <li><a href="data/viz_data.json"><code>data/viz_data.json</code></a> <span class="desc">— EDA 聚合 (判别力、缺失率、相关性)</span></li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- Card 2 -->
+    <article class="card">
+      <div class="accent"></div>
+      <div class="thumb">
+        <img src="reports/age_era_stacked.png" alt="Age era stacked bar">
+      </div>
+      <div class="body">
+        <h2>段 2 · 时空分布</h2>
+        <p class="lead">空间上 211,773 条样本点分布全球；时间维度则有一个严重的盲点 (0.076% 覆盖率)。</p>
+        <div class="warn">
+          <strong>⚠ 时间元数据盲点：</strong>仅 161/211,773 (0.076%) 样本有年龄；11 类中有 6 类零年龄样本。
+        </div>
+        <ul>
+          <li><a href="REVIEW.md#2-时空分布">REVIEW.md</a> <span class="desc">— 第 2 节叙事</span></li>
+          <li><a href="index.html">index.html</a> <span class="desc">— 交互 Leaflet 地图</span></li>
+          <li><a href="reports/age_violin.png">reports/age_violin.png</a> <span class="desc">— 年龄分布小提琴图</span></li>
+          <li><a href="reports/age_era_stacked.png">reports/age_era_stacked.png</a> <span class="desc">— 地质年代堆叠柱状图</span></li>
+          <li><code>16_age_eda.py</code> <span class="desc">— 年龄 EDA 脚本</span></li>
+          <li><a href="data/age_distribution.json"><code>data/age_distribution.json</code></a> <span class="desc">— 年龄统计 JSON</span></li>
+          <li><a href="data/prediction_map.json"><code>data/prediction_map.json</code></a> <span class="desc">— OOF 预测带坐标</span></li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- Card 3 -->
+    <article class="card">
+      <div class="accent"></div>
+      <div class="thumb">
+        <div class="thumb-gradient">
+          <div>
+            <div class="eq">F<sub>1</sub><sup>macro</sup> = (1/K) Σ F<sub>1</sub><sup>(k)</sup></div>
+            <div class="small" style="margin-top:10px; opacity:0.85;">softmax · stratified CV · native NaN · SHAP</div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <h2>段 3 · 多分类任务原理</h2>
+        <p class="lead">softmax XGBoost、分层 5 折 CV、原生 NaN 处理、SHAP 3D 张量的数学基础。</p>
+        <ul>
+          <li><a href="REVIEW.md#3-多分类任务原理">REVIEW.md</a> <span class="desc">— 第 3 节叙事</span></li>
+          <li><a href="docs/methodology.md"><code>docs/methodology.md</code></a> <span class="desc">— 完整方法论 (中文, 2400+ 字)</span></li>
+          <li><code>10_cv_confusion.py</code> <span class="desc">— CV 实现 (行 118-190 核心循环)</span></li>
+          <li><code>09_shap_analysis.py</code> <span class="desc">— SHAP 计算 (行 145-211)</span></li>
+          <li><code>08_train_no_full_trace_missing.py</code> <span class="desc">— 核心训练策略</span></li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- Card 4 -->
+    <article class="card">
+      <div class="accent"></div>
+      <div class="thumb">
+        <div class="thumb-gradient">
+          <div>
+            <div class="arrow">F1: 0.73 → 0.909 → 0.959</div>
+            <div class="small" style="margin-top:10px; opacity:0.85;">全量 → 排除微量全缺 → 玄武岩斑晶</div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <h2>段 4 · 实验梳理</h2>
+        <p class="lead">从全量中位插补 (F1≈0.73) 到排除全微量缺失 (F1=0.909) 到玄武岩斑晶 (F1=0.959) 的演化路径。</p>
+        <ul>
+          <li><a href="REVIEW.md#4-不同子集实验梳理">REVIEW.md</a> <span class="desc">— 第 4 节叙事</span></li>
+          <li><code>08_train_no_full_trace_missing.py</code> <span class="desc">— 核心策略 (F1=0.9125)</span></li>
+          <li><code>10_cv_confusion.py</code> <span class="desc">— 金标 5 折 CV (F1=0.909±0.005)</span></li>
+          <li><code>11_basalt_subset.py</code> <span class="desc">— 玄武岩子集</span></li>
+          <li><code>13_fill_experiment_gaps.py</code> <span class="desc">— 缺口组合补齐</span></li>
+          <li><code>15_basalt_excl_trace.py</code> <span class="desc">— 最佳小样本 (F1=0.959)</span></li>
+          <li><a href="data/viz_data.json"><code>viz_data.json</code></a> <span class="desc">— <code>models</code> 键, 17 条实验记录</span></li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- Card 5 -->
+    <article class="card">
+      <div class="accent"></div>
+      <div class="thumb">
+        <div class="thumb-gradient">
+          <div>
+            <div class="small" style="font-size:15px;">Hardest · Archean Craton <strong style="font-size:17px;">F1 = 0.76</strong></div>
+            <div class="small" style="font-size:15px; margin-top:8px;">Easiest · OBF <strong style="font-size:17px;">F1 = 0.98</strong></div>
+            <div class="small" style="margin-top:12px; opacity:0.85;">ΔF1 (trace) = +0.48 · K₂O paradox</div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <h2>段 5 · 结果分析</h2>
+        <p class="lead">每类 F1 分解、Gain vs SHAP 差异、混淆矩阵、微量元素决定性 ΔF1=+0.48、K₂O 悖论。</p>
+        <ul>
+          <li><a href="REVIEW.md#5-结果分析">REVIEW.md</a> <span class="desc">— 第 5 节叙事</span></li>
+          <li><a href="data/cv_results.json"><code>data/cv_results.json</code></a> <span class="desc">— 每类指标、混淆矩阵</span></li>
+          <li><a href="data/shap_data.json"><code>data/shap_data.json</code></a> <span class="desc">— 特征重要性、分类 SHAP</span></li>
+          <li><a href="data/basalt_results.json"><code>data/basalt_results.json</code></a> <span class="desc">— 玄武岩变体</span></li>
+          <li><a href="CPX_Tectonic_Classification.pptx">CPX_Tectonic_Classification.pptx</a> <span class="desc">— 16 页 PPTX 汇报</span></li>
+        </ul>
+      </div>
+    </article>
+
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <h4>核心文档 · Core Documents</h4>
+    <div class="core-links">
+      <a class="core-link" href="REVIEW.md">
+        <span class="name">REVIEW.md</span>
+        <span class="tag">Narrative walkthrough · 五段叙事</span>
+      </a>
+      <a class="core-link" href="docs/methodology.md">
+        <span class="name">docs/methodology.md</span>
+        <span class="tag">Multi-class math · 多分类原理</span>
+      </a>
+      <a class="core-link" href="CPX_Tectonic_Classification.pptx">
+        <span class="name">CPX_Tectonic_Classification.pptx</span>
+        <span class="tag">16 slides · 汇报幻灯片</span>
+      </a>
+      <a class="core-link" href="index.html">
+        <span class="name">index.html</span>
+        <span class="tag">Interactive dashboard · 交互面板</span>
+      </a>
+    </div>
+    <p class="meta">Data source: GEOROC / GRO.data · DOI: <code>10.25625/SGFTFN</code></p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,216 @@
+{
+  "total_samples": 211773,
+  "total_with_age_ma": 161,
+  "coverage_pct": 0.076,
+  "classes": {
+    "INTRAPLATE VOLCANICS": {
+      "n_total": 84835,
+      "n_with_age": 16,
+      "median_ma": 274.615,
+      "mean_ma": 230.65812499999998,
+      "q1_ma": 17.675,
+      "q3_ma": 348.9,
+      "min_ma": 8.0,
+      "max_ma": 731.0,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 1,
+        "Paleozoic": 7,
+        "Mesozoic": 2,
+        "Cenozoic": 4,
+        "Recent": 2,
+        "Unknown": 84819
+      }
+    },
+    "CONVERGENT MARGIN": {
+      "n_total": 56216,
+      "n_with_age": 125,
+      "median_ma": 29.9,
+      "mean_ma": 55.199839999999995,
+      "q1_ma": 12.5,
+      "q3_ma": 110.0,
+      "min_ma": 0.045,
+      "max_ma": 159.0,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 47,
+        "Cenozoic": 52,
+        "Recent": 26,
+        "Unknown": 56091
+      }
+    },
+    "OCEAN ISLAND": {
+      "n_total": 24008,
+      "n_with_age": 11,
+      "median_ma": 0.0554,
+      "mean_ma": 6.3845363636363635,
+      "q1_ma": 0.05095,
+      "q3_ma": 11.43375,
+      "min_ma": 0.0405,
+      "max_ma": 23.7,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 0,
+        "Cenozoic": 3,
+        "Recent": 8,
+        "Unknown": 23997
+      }
+    },
+    "CONTINENTAL FLOOD BASALT": {
+      "n_total": 20816,
+      "n_with_age": 0,
+      "median_ma": null,
+      "mean_ma": null,
+      "q1_ma": null,
+      "q3_ma": null,
+      "min_ma": null,
+      "max_ma": null,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 0,
+        "Cenozoic": 0,
+        "Recent": 0,
+        "Unknown": 20816
+      }
+    },
+    "RIFT VOLCANICS": {
+      "n_total": 13689,
+      "n_with_age": 3,
+      "median_ma": 24.4,
+      "mean_ma": 64.56666666666666,
+      "q1_ma": 17.85,
+      "q3_ma": 91.2,
+      "min_ma": 11.3,
+      "max_ma": 158.0,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 1,
+        "Cenozoic": 2,
+        "Recent": 0,
+        "Unknown": 13686
+      }
+    },
+    "COMPLEX VOLCANIC SETTINGS": {
+      "n_total": 4201,
+      "n_with_age": 6,
+      "median_ma": 0.0325,
+      "mean_ma": 0.030166666666666665,
+      "q1_ma": 0.023,
+      "q3_ma": 0.039,
+      "min_ma": 0.006,
+      "max_ma": 0.049,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 0,
+        "Cenozoic": 0,
+        "Recent": 6,
+        "Unknown": 4195
+      }
+    },
+    "SEAMOUNT": {
+      "n_total": 3907,
+      "n_with_age": 0,
+      "median_ma": null,
+      "mean_ma": null,
+      "q1_ma": null,
+      "q3_ma": null,
+      "min_ma": null,
+      "max_ma": null,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 0,
+        "Cenozoic": 0,
+        "Recent": 0,
+        "Unknown": 3907
+      }
+    },
+    "ARCHEAN CRATON (INCLUDING GREENSTONE BELTS)": {
+      "n_total": 2189,
+      "n_with_age": 0,
+      "median_ma": null,
+      "mean_ma": null,
+      "q1_ma": null,
+      "q3_ma": null,
+      "min_ma": null,
+      "max_ma": null,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 0,
+        "Cenozoic": 0,
+        "Recent": 0,
+        "Unknown": 2189
+      }
+    },
+    "OCEANIC PLATEAU": {
+      "n_total": 1472,
+      "n_with_age": 0,
+      "median_ma": null,
+      "mean_ma": null,
+      "q1_ma": null,
+      "q3_ma": null,
+      "min_ma": null,
+      "max_ma": null,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 0,
+        "Cenozoic": 0,
+        "Recent": 0,
+        "Unknown": 1472
+      }
+    },
+    "SUBMARINE RIDGE": {
+      "n_total": 233,
+      "n_with_age": 0,
+      "median_ma": null,
+      "mean_ma": null,
+      "q1_ma": null,
+      "q3_ma": null,
+      "min_ma": null,
+      "max_ma": null,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 0,
+        "Cenozoic": 0,
+        "Recent": 0,
+        "Unknown": 233
+      }
+    },
+    "OCEAN-BASIN FLOOD BASALT": {
+      "n_total": 207,
+      "n_with_age": 0,
+      "median_ma": null,
+      "mean_ma": null,
+      "q1_ma": null,
+      "q3_ma": null,
+      "min_ma": null,
+      "max_ma": null,
+      "era_counts": {
+        "Archean": 0,
+        "Proterozoic": 0,
+        "Paleozoic": 0,
+        "Mesozoic": 0,
+        "Cenozoic": 0,
+        "Recent": 0,
+        "Unknown": 207
+      }
+    }
+  }
+}
