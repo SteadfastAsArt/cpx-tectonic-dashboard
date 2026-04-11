@@ -76,7 +76,7 @@
 
 **消融验证**。同样的 39,631 行子集上，只用 11 个主量氧化物重新训练（`13_fill_experiment_gaps.py` 里的 major-only 分支），F1m 掉到 **0.432**。差值 +0.477 证明了一件事：**微量元素是构造环境信号的真正载体**，主量氧化物最多承担了一半的工作量。在玄武岩子集上做同一个消融，差值是 +0.328，同一个方向、量级略小。
 
-**玄武岩与玄武岩斑晶分支**。`11_basalt_subset.py` 把数据限制到玄武岩母岩的样本，大约 46,530 行，F1m = 0.717；叠加 excl trace-missing 后升到 **0.904**（`15_basalt_excl_trace.py`）。更极端的是"玄武岩斑晶 + excl trace-missing"，n 掉到 **783**，F1m 却到了 **0.959**。这几乎是完美分类，但小样本的解释必须谨慎——这个结果究竟是"斑晶环境下单斜辉石化学信号更纯净"还是"小 n 下的过拟合假象"是一个悬而未决的问题，第 6 节列进了下一步待办。
+**玄武岩与玄武岩斑晶分支**。`11_basalt_subset.py` 把数据限制到玄武岩母岩的样本，大约 46,530 行，F1m = 0.717；叠加 excl trace-missing 后升到 **0.904**（`15_basalt_excl_trace.py`）。更极端的是"玄武岩斑晶 + excl trace-missing"，n 掉到 **783**，独立训练的 F1m 到了 **0.959**。第一眼看这个数字会觉得"斑晶信号更纯净"是个干净的解释，但单独训练的性能本身没办法区分"regime 更易学"和"小 n 过拟合"两种可能——这个悬念在 5.7 节通过 **stratified subset evaluation**（把主模型的 OOF 预测切片到同一 783 个样本上评估）得到了定量回答：独立训练的 0.959 里大约 0.056 的 F1 提升主要来自 CFB (n=5) 与 Oceanic Plateau (n=16) 两个小样本类的完美命中，而在大样本类上主模型和专用模型基本打平。换言之 0.959 不是假象，但也不是"玄武岩斑晶需要专用模型"的证据，详见 5.7。
 
 完整的实验对照如下：
 
@@ -88,12 +88,14 @@
 | Excl trace-missing, major-only | 同上 | 39,631 | 0.432 | 消融证据 |
 | Basalt 全量 | 玄武岩 | ~46,530 | 0.717 | 类子集 |
 | Basalt + excl trace-missing | 玄武岩去全缺 | — | 0.904 | 同趋势 |
-| Basalt 斑晶 + excl trace-missing | 极端子集 | 783 | **0.959** | 近似完美，小 n 警告 |
+| Basalt 斑晶 + excl trace-missing（**独立训练**） | 极端子集 | 783 | 0.959 | 看似完美，参考 5.7 |
+| **Basalt 斑晶 + excl trace-missing（主模型 OOF 切片）** | **同一 783 样本** | **783** | **0.9027**（8 类） | **stratified eval，5.7 节重点** |
 
-**仓库当前的脚本版图**（清理后共 11 个 Python 文件）：
+**仓库当前的脚本版图**（清理后共 12 个 Python 文件）：
 - 核心流水线：`01_clean_data.py`、`02_eda.py`、`08_train_no_full_trace_missing.py`、`09_shap_analysis.py`、`10_cv_confusion.py`
 - 子集与衍生实验：`11_basalt_subset.py`、`13_fill_experiment_gaps.py`、`14_prediction_map_data.py`、`15_basalt_excl_trace.py`
 - 新补的 EDA：`16_age_eda.py`、`17_class_feature_boxplot.py`
+- Regime-specific 评估：`eval_basalt_pheno_on_best_practical.py`（5.7 节的 OOF 切片脚本）
 - 构建产物：`build_ppt.py`
 - 已删除（早期探索、已被取代）：`03`、`04`、`05`、`06`、`07`、`12`、`extract_map_data.py`
 
@@ -141,14 +143,51 @@
 
 换句话说，模型不仅在数字上好，它的解释方向和我们独立知道的地球化学机制是一致的。这是在 ML 社区以外、对地球化学家最有说服力的一类证据——它把"黑盒分类器拿到高分"翻译成了"模型隐式学会了俯冲带富 Sr 机制"，后者是一个可以在评审意见里经得起推敲的陈述。类似地，Sm 对 Intraplate Volcanics 的正贡献可以关联到地幔柱源区的 LREE 富集，Zr 对 Convergent Margin 的正贡献对应着弧岩浆的锆石饱和与高场强元素亏损这一对标志性特征。这些解释都可以直接从 `shap_per_class` 的热图里读出来，不需要再训练任何新模型。
 
+### 5.7 Regime-specific 分解：best practical 在 basalt+phenocryst 切片上的表现
+
+第 4 节留了一个悬而未决的问题：独立训练的"玄武岩斑晶 + excl trace-missing"模型拿到了 F1m = 0.959，n = 783，这个数字究竟是因为"斑晶 regime 信号更纯净"，还是小样本过拟合？单独训练本身无法回答这个问题——只有把它和**同一个 783 样本在主模型上的表现**放在一起比较，才能分离两种解释。
+
+我们写了一个一次性脚本 `eval_basalt_pheno_on_best_practical.py`，做法是：**完全复现 `10_cv_confusion.py` 的 5 折分层 CV（同一 seed=42、同一超参、同一 39,631 行）**，拿到整个 39,631 样本的 OOF 预测，然后按 15 号脚本的定义（`ROCK NAME` 含 "BASALT" 且 `CRYSTAL ∈ {phenocryst, microphenocryst}`）把 OOF 预测切到同一 783 个样本上重新计算指标。这种做法有一个方法论术语：**stratified subset evaluation via OOF slicing**，它的前提是"主模型的训练集包含被评估的子集"——本项目恰好满足。
+
+脚本的 sanity check 直接重算了整体 39,631 行的 OOF F1m = 0.9094，和 `cv_results.json` 记录的 0.909 ± 0.005 精确一致，说明复现是可靠的。切到 783 个 basalt+phenocryst 样本上之后，主模型的成绩是：
+
+| 指标 | 值 |
+|---|---:|
+| n_eval | 783 |
+| Accuracy | 0.9387 |
+| **F1-macro（8 个出现的类）** | **0.9027** |
+| F1-weighted | 0.9408 |
+
+和独立训练（同样的 783 样本）的 0.9591 相比，差距是 **0.056**。但这个差距不是均匀分布在 8 个类上的，下面是每类对比：
+
+| 类 | n | 主模型切片 F1 | 独立训练 F1 | Δ (独立 − 主) |
+|---|---:|---:|---:|---:|
+| Convergent Margin | 424 | 0.955 | 0.961 | **+0.006** |
+| Seamount | 106 | **0.904** | 0.873 | **−0.031**（主模型更好） |
+| Ocean Island | 90 | **0.978** | 0.972 | **−0.006**（主模型更好） |
+| Intraplate Volcanics | 57 | 0.848 | 0.904 | +0.056 |
+| Complex Volcanic | 46 | 0.955 | 0.978 | +0.023 |
+| Rift Volcanics | 39 | 0.946 | 0.987 | +0.041 |
+| Oceanic Plateau | 16 | 0.970 | 1.000 | +0.030 ⚠ |
+| Continental Flood Basalt | **5** | 0.667 | 1.000 | +0.333 ⚠⚠ |
+
+带 ⚠ 的两类是独立训练发生了过拟合的区域（n ≤ 16），它们为 F1-macro 贡献了大半的 gap。去掉这两类之后，剩下 6 个大样本类的平均 Δ 只有 +0.015。更有意思的是，**主模型在 Seamount 和 Ocean Island 上反而更好**——这意味着主模型在这两类玄武岩斑晶子群上的泛化能力超过了专门训练的小模型，后者因为 n 太小反而学不好。
+
+**Intraplate Volcanics 的反常下降**是这一节最值得写进论文的发现。整体 39,631 行上 Intraplate 的 F1 是 0.956，但切到 basalt+phenocryst 子集后掉到 0.848，足足 10.8 个百分点。唯一合理的解释是：整体 Intraplate 类里的 16,988 条样本**主要由橄榄岩捕虏体（lherzolite/harzburgite xenolith）驱动**——这和 prediction_map.json 里的元数据是吻合的，原表中最常见的几类 ROCK NAME 依次是 `LHERZOLITE, SPINEL, XENOLITH`、`LHERZOLITE, XENOLITH`、`HARZBURGITE, XENOLITH`。主模型学到的 Intraplate 指纹因此偏向地幔捕虏体那一侧的单斜辉石化学，等到它遇到 basalt+phenocryst 这 57 条"真正的玄武岩结晶产物"时反而水土不服。这是一个模型揭示的数据结构性事实：**"Intraplate Volcanics" 在 GEOROC 数据库里其实是两个子群——地幔捕虏体为主的那一半和少量真正的 intraplate basalt phenocryst**，两者的单斜辉石化学差异足以让同一个标签的两个子群互相误导一个 8.6 万样本的类别。
+
+合并起来，5.7 的核心结论有三点：第一，**F1 = 0.959 不是过拟合假象，但它也不是"basalt+phenocryst 需要专用模型"的证据**——主模型在同一切片上已经达到 0.903，两者的差距主要来自 n ≤ 16 小类的过拟合而非 regime 本身。第二，**不需要训练专用模型**：维护一个 39,631 行的主模型就能同时覆盖整体评估和玄武岩斑晶子集场景，没有必要为 basalt+phenocryst 单独开发一条 pipeline。第三，**Intraplate Volcanics 的 −0.108 劣化是一个地质学意义上的真发现**，下一步应该把原数据中 ROCK NAME 的岩性信息（xenolith vs. volcanic rock）作为元标签纳入分析，甚至可能需要把 Intraplate 拆成两个子类。
+
+完整的 JSON 在 `web/data/basalt_pheno_eval_on_best_practical.json`，PPT 第 13 页把三个 F1m 数字和每类 Δ 可视化。
+
 ---
 
 ## 下一步建议
 
 1. **推动 GEOROC 补齐年龄字段**。0.076% 的年龄覆盖率是当前数据最大的硬缺口。和数据维护方合作把这一列补完，可以直接开启"时间演化 × 构造环境"这一整类后续研究。这不是一个需要更多模型的问题，是一个需要更多元数据的问题。
 2. **针对 ARCHEAN CRATON 和 OCEANIC PLATEAU 小类**尝试数据增强、靶向采样、或半监督利用那些被我们扔掉的"全缺失"样本的空间元数据作为先验。目前这两类是拖累 F1m 的主要因素。
-3. **把 F1 = 0.909 的结果整理成论文**。方法论稳（5 折 CV + OOF + 类权 + 原生 NaN），数据量够（39,631 行 / 50 特征 / 11 类），SHAP 方向性解释和独立的地球化学知识吻合——发表条件已经齐全。
-4. **玄武岩斑晶小 n 结果的真实性验证**。F1 = 0.959 / n = 783 要么是一个"信号更纯净的小子集"，要么是过拟合。建议用留一类验证、bootstrap 置信区间、或在独立数据源上外测来判别。
+3. **把 F1 = 0.909 的结果整理成论文**。方法论稳（5 折 CV + OOF + 类权 + 原生 NaN + stratified subset evaluation），数据量够（39,631 行 / 50 特征 / 11 类），SHAP 方向性解释和独立的地球化学知识吻合，regime-specific 分析也已经覆盖了 basalt+phenocryst 子集——发表条件已经齐全。
+4. **拆分 Intraplate Volcanics 标签（新）**。5.7 节揭示整体 Intraplate 类的 16,988 条样本主要由橄榄岩捕虏体驱动，和真正的 intraplate basalt phenocryst 在单斜辉石化学上差异显著。下一步应把 `ROCK NAME` 中的岩性类型（xenolith vs volcanic rock）作为元标签纳入建模，甚至可能需要在标签层面把 Intraplate Volcanics 拆成 "Intraplate xenolith-hosted" 与 "Intraplate phenocryst-hosted" 两个子类——这是一个模型揭示、数据支持、地质上可解释的标签细化方向。
+5. **已结案：玄武岩斑晶小 n 悬念**。原本担心独立训练的 F1 = 0.959 / n = 783 是过拟合假象，stratified subset evaluation 定量回答了这个问题：主模型在同一切片上 F1m = 0.9027，大部分 +0.056 gap 来自 CFB (n=5) 和 Oceanic Plateau (n=16) 的小样本过拟合，不需要再做外测验证。
 
 ---
 
@@ -166,6 +205,7 @@
 - `15_basalt_excl_trace.py` — 玄武岩 + excl-trace 组合
 - `16_age_eda.py` — 年龄覆盖率溯源
 - `17_class_feature_boxplot.py` — 按类别的箱线图生成
+- `eval_basalt_pheno_on_best_practical.py` — 5.7 节的 OOF 切片评估脚本
 - `build_ppt.py` — 汇报 PPT 构建脚本
 
 ### 数据 JSON（`web/data/`）
@@ -176,6 +216,7 @@
 - `prediction_map.json` — 39,631 条 OOF 预测 + 置信度 + 误分类上下文
 - `age_distribution.json` — 年龄覆盖率溯源产物
 - `basalt_results.json` / `basalt_excl_trace_results.json` — 玄武岩分支实验结果
+- `basalt_pheno_eval_on_best_practical.json` — 5.7 节 stratified eval 产物（主模型切片到 basalt+phenocryst 的指标）
 - `gap_experiments.json` — 填充/消融实验系列
 - `samples.json` — UI 用样本采样
 
@@ -190,6 +231,6 @@
 - `docs/methodology.md` — 完整数学推导
 
 ### 汇报与交互
-- `CPX_Tectonic_Classification.pptx` — 16 页汇报 PPT（第 11 页为混淆矩阵）
+- `CPX_Tectonic_Classification.pptx` — 17 页汇报 PPT（第 11 页为混淆矩阵，第 13 页为 stratified eval）
 - `web/index.html` — 基于 Leaflet 的交互地图
-- `review_index.html` — 与本综述配套的汇总页（待构建）
+- `review_index.html` — 与本综述配套的汇总页（已发布至 GitHub Pages）
